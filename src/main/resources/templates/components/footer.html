@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body th:fragment="footer">
+<style>
+.copyRight-text {
+    color: #9A9BA1;
+    font-weight: 900;
+}
+
+
+</style>
+    <div class="p-0 text-center" style="display: none;">
+      <div class="container-fluid copyRight-text">
+     		 台灣大哥大版權所有 © <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> TaiwanMobile All Rights Reserved.
+      </div>
+    </div>
+</body>
+</html>

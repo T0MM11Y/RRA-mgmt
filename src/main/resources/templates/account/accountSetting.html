@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<body layout:fragment="content">
+	<div class="text-left">
+		<h1 class="display-5">[[${vo.action.isAdd() ? '新增' : '編輯'}]]帳號</h1>
+	</div>
+	<div class="container-fluid px-3 py-3">
+		<form method="post">
+			<h6 class="heading-small text-muted mb-4">基本資訊</h6>
+			<div class="pl-lg-4">
+				<div class="row">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label mark__required" for="userName">使用者名稱</label>
+							<input type="text" class="form-control" id="userName"
+								name="userName" th:value="${vo.userName}" />
+						</div>
+					</div>
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label mark__required" for="email">E-Mail</label>
+							<input type="text" class="form-control" id="email" name="email"
+								th:value="${vo.email}" />
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label" for="mobile">手機號碼</label> <input
+								type="text" class="form-control" id="mobile" name="mobile"
+								maxlength="10" th:value="${vo.mobile}" />
+						</div>
+					</div>
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label mark__required" for="requestId">需求單號</label> <input
+								type="text" class="form-control" id="requestId" name="requestId"
+								maxlength="100" th:value="${vo.requestId}" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<h6 class="heading-small text-muted mb-4">簽核設定</h6>
+			<div class="pl-lg-4">
+				<div class="col-lg-12">
+					<div class="row">
+						<label class="form-control-label mark__required">簽核核決權限</label>
+						<div class="mx-4">
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" class="custom-control-input"
+									id="approvable1" name="approvable" value="Y"
+									th:checked="${vo.approvable eq 'Y'}" /> <label
+									class="custom-control-label" for="approvable1">是</label>
+							</div>
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" class="custom-control-input"
+									id="approvable2" name="approvable" value="N"
+									th:checked="${vo.approvable eq 'N'}" /> <label
+									class="custom-control-label" for="approvable2">否</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<h6 class="heading-small text-muted mb-4">權限設定</h6>
+			<div class="pl-lg-4">
+				<div class="row">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label mark__required" for="roleId">角色權限</label>
+							<select class="form-control" id="roleId" name="roleId" required>
+								<option value="">請選擇</option>
+								<option th:each="role : ${roleList}" th:value="${role.roleId}"
+									th:text="${role.roleName}"
+									th:selected="${role.roleId eq vo.roleId}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label mark__required"
+								for="departmentId">部門別</label> <select class="form-control"
+								id="departmentId" name="departmentId">
+								<option value="">請選擇</option>
+								<option th:each="department : ${departmentList}"
+									th:value="${department.departmentId}"
+									th:text="${department.departmentName}"
+									th:selected="${department.departmentId eq vo.departmentId}"></option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-12">
+				<div class="row justify-content-center">
+					<input type="hidden" name="accountId" th:value="${vo.accountId}" />
+					<input type="hidden" name="action" th:value="${vo.action}" />
+					<button type="button" class="btn btn-primary"
+						th:onclick="'callAjax(\'' + @{saveAccountSetting} + '\', null, confirmMsg)'">儲存</button>
+				</div>
+			</div>
+		</form>
+	</div>
+
+	<script th:inline="javascript">
+    
+    getWatermarkInit([[${session.userInfo.employeeId}]] + "(" + [[${session.userInfo.departmentName}]] + ")機敏個資");
+    
+    $(function() {
+		
+    });
+
+    function confirmMsg() {
+    	let contentDiv = $('#messageModal .modal-content');
+    	
+    	let footerDiv = $('<div>').prop('class', 'modal-footer');
+    	
+    	let continueBtn = $('<button>').prop('class', 'btn btn-secondary').attr('onclick', 'gotoPage([[@{setting}]])').html('繼續新增');
+    	
+    	let redirectBtn = $('<button>').prop('class', 'btn btn-primary').attr('onclick', 'gotoPage([[@{findAccount}]])').html('回帳號列表');
+    	
+    	contentDiv.append(footerDiv.append(continueBtn).append(redirectBtn));
+    	
+    	$('#messageModal').on('hidden.bs.modal', function() {
+    		$(this).find('.modal-body').empty();
+    		
+    		gotoPage([[@{findAccount}]]);
+    	});
+    }
+    
+    </script>
+</body>
+</html>

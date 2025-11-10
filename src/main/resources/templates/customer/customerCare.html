@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}"
+>
+  <head>
+    <style>
+      /* Professional Card Styles */
+      .identification-card {
+        border-left: 4px solid #007bff;
+      }
+
+      .basic-filters {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+      }
+
+      .basic-filters .filter-field {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        margin-bottom: 0;
+      }
+
+      .basic-filters .filter-field label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.375rem;
+        font-size: 0.875rem;
+        line-height: 1.2;
+      }
+
+      /* Use global form control sizing; no page-level overrides here */
+
+      .basic-filters .filter-field .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      /* Ensure proper grid layout for basic filters */
+      .filter-grid.basic-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px 24px;
+        align-items: start;
+      }
+
+      /* Override any inherited margins that might cause misalignment */
+      .basic-filters .filter-field {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+      }
+
+      .basic-filters .filter-field select.form-control {
+        margin: 0;
+      }
+
+      #emptyState {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem;
+        margin: 1rem;
+      }
+
+      #txTableCard {
+        border-left: 4px solid #17a2b8;
+      }
+
+      .filter-card__subtitle {
+        font-size: 0.9rem;
+        color: #6c757d;
+      }
+
+      #userInfo {
+        font-size: 0.875rem;
+      }
+    </style>
+  </head>
+  <body layout:fragment="content">
+    <div class="page-header">
+      <div class="page-header__content">
+        <span class="page-header__eyebrow">Customer Care</span>
+        <h1 class="page-header__title">用戶查詢與交易記錄</h1>
+        <p class="page-header__subtitle">
+          Search for a user by identifier and view their transaction history in
+          one place.
+        </p>
+      </div>
+    </div>
+
+    <div class="container-fluid px-3 py-3">
+      <!-- Hidden variable for Home OPCO -->
+      <span id="homeOpcoLabelVar" class="d-none" th:text="${homeOpcoLabel}"
+        >TWM</span
+      >
+
+      <!-- Identification Card -->
+      <form id="customerCareForm" method="post">
+        <div class="filter-card identification-card mb-3">
+          <div class="filter-card__header">
+            <div class="filter-card__title-group">
+              <h2 class="filter-card__title mb-0">User Identification</h2>
+            </div>
+            <div class="filter-card__actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="careUI.resetAll()"
+              >
+                <i class="fa fa-refresh" aria-hidden="true"></i> Reset
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary--c"
+                onclick="careUI.identifyUser()"
+              >
+                <i class="fa fa-search" aria-hidden="true"></i> Identify
+              </button>
+            </div>
+          </div>
+          <div class="mb-3 px-3 pt-3">
+            <label class="d-block mb-2 font-weight-bold">Identifier Type</label>
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+              <label class="btn btn-outline-primary active">
+                <input
+                  type="radio"
+                  name="identifierType"
+                  value="msisdn"
+                  checked
+                  autocomplete="off"
+                  onchange="careUI.switchIdentifier()"
+                />
+                Phone Number
+              </label>
+              <label class="btn btn-outline-primary">
+                <input
+                  type="radio"
+                  name="identifierType"
+                  value="twmUid"
+                  autocomplete="off"
+                  onchange="careUI.switchIdentifier()"
+                />
+                TWM UID
+              </label>
+              <label class="btn btn-outline-primary">
+                <input
+                  type="radio"
+                  name="identifierType"
+                  value="subid"
+                  autocomplete="off"
+                  onchange="careUI.switchIdentifier()"
+                />
+                SUB ID
+              </label>
+              <label class="btn btn-outline-primary">
+                <input
+                  type="radio"
+                  name="identifierType"
+                  value="aesTwmUid"
+                  autocomplete="off"
+                  onchange="careUI.switchIdentifier()"
+                />
+                AES TWM UID
+              </label>
+            </div>
+          </div>
+          <div class="filter-grid">
+            <div class="filter-field">
+              <label for="identifierValue">
+                <span id="identifierLabel">Phone Number</span>
+                <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="identifierValue"
+                maxlength="50"
+                placeholder="Enter phone number"
+              />
+              <input type="hidden" id="msisdn" name="msisdn" />
+              <input type="hidden" id="twmUid" name="twmUid" />
+              <input type="hidden" id="subid" name="subid" />
+              <input type="hidden" id="aesTwmUid" name="aesTwmUid" />
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <!-- Transaction History Card -->
+      <div id="txTableCard" class="filter-card d-none mb-3">
+        <div class="filter-card__header">
+          <div class="filter-card__title-group">
+            <h2 class="filter-card__title mb-0">Transaction History</h2>
+            <p class="filter-card__subtitle mb-0">
+              <span id="userInfo" class="text-muted">
+                <span id="summaryIdentifierType">--</span>:
+                <span id="summaryIdentifierValue">--</span> | Home OPCO:
+                <span
+                  class="badge badge-primary badge-pill px-2 py-1"
+                  id="summaryHomeOpco"
+                  >--</span
+                >
+              </span>
+            </p>
+          </div>
+          <div class="filter-card__actions">
+            <span class="text-muted small mr-3"
+              >Total: <strong id="summaryTotal">0</strong></span
+            >
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              onclick="careUI.clearFilters()"
+            >
+              <i class="fa fa-eraser" aria-hidden="true"></i> Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filter-grid basic-filters">
+          <div class="filter-field">
+            <label for="transactionType">Transaction Type</label>
+            <select
+              id="transactionType"
+              name="transactionType"
+              class="form-control form-control-sm"
+            >
+              <option value="">All</option>
+              <option
+                th:each="type : ${transactionTypes}"
+                th:value="${type}"
+                th:text="${type}"
+              ></option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="paymentMethod">Payment Method</label>
+            <select
+              id="paymentMethod"
+              name="paymentMethod"
+              class="form-control form-control-sm"
+            >
+              <option value="">All</option>
+              <option
+                th:each="method : ${paymentMethods}"
+                th:value="${method}"
+                th:text="${method}"
+              ></option>
+            </select>
+          </div>
+          <!-- Apply button removed (auto filtering enabled) -->
+        </div>
+
+        <div class="data-toolbar">
+          <div class="data-toolbar__info">
+            <i class="fa fa-info-circle" aria-hidden="true"></i>
+            <span id="toolbarMessage"
+              >No transactions to display. Please perform a search.</span
+            >
+          </div>
+        </div>
+        <div class="table--c">
+          <table class="table--customerCare"></table>
+          <div id="emptyState" class="text-center py-4 d-none">
+            <p class="mb-2">No transactions match current filters.</p>
+            <button
+              class="btn btn-outline-secondary btn-sm"
+              onclick="careUI.clearFilters()"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div
+      class="modal fade"
+      id="transactionDetailModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="transactionDetailLabel"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog modal-lg modal-dialog-scrollable"
+        role="document"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="transactionDetailLabel">
+              Transaction Detail
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction ID</span>
+                  <span class="detail-field__value" id="detailTransactionId"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Order ID</span>
+                  <span class="detail-field__value" id="detailOrderId">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Name</span>
+                  <span class="detail-field__value" id="detailRewardName"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Type</span>
+                  <span class="detail-field__value" id="detailRewardType"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Quantity</span>
+                  <span class="detail-field__value" id="detailRewardQuantity"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction Type</span>
+                  <span class="detail-field__value" id="detailTransactionType"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Status</span>
+                  <span class="detail-field__value" id="detailStatus">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Report Month</span>
+                  <span class="detail-field__value" id="detailReportMonth"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Payment Method</span>
+                  <span class="detail-field__value" id="detailPaymentMethod"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Payment (Point | Cash)</span
+                  >
+                  <span class="detail-field__value" id="detailPaymentBreakdown"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Payment Currency</span>
+                  <span class="detail-field__value" id="detailPaymentCurrency"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Refund Amount (Point | Cash)</span
+                  >
+                  <span class="detail-field__value" id="detailRefundAmount"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Refund Currency</span>
+                  <span class="detail-field__value" id="detailRefundCurrency"
+                    >--</span
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-field">
+                  <span class="detail-field__label">Catalog Owner</span>
+                  <span class="detail-field__value" id="detailCatalogOwner"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Home OPCO</span>
+                  <span class="detail-field__value" id="detailHomeOpco"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">HO Time</span>
+                  <span class="detail-field__value" id="detailHoTime">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">CO Time</span>
+                  <span class="detail-field__value" id="detailCoTime">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction Time</span>
+                  <span class="detail-field__value" id="detailTransactionTime"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Price (Point | Cash)</span>
+                  <span class="detail-field__value" id="detailPriceBreakdown"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Price Currency</span>
+                  <span class="detail-field__value" id="detailPriceCurrency"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Default Margin %</span>
+                  <span class="detail-field__value" id="detailDefaultMargin"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Additional Margin %</span>
+                  <span class="detail-field__value" id="detailAdditionalMargin"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Discount %</span>
+                  <span class="detail-field__value" id="detailDiscount"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Catalog Owner FX Rate</span>
+                  <span class="detail-field__value" id="detailCatalogOwnerFx"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Catalog Owner Point Ratio</span
+                  >
+                  <span
+                    class="detail-field__value"
+                    id="detailCatalogOwnerPointRatio"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Home OPCO FX Rate</span>
+                  <span class="detail-field__value" id="detailHomeOpcoFx"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Home OPCO Point Ratio</span>
+                  <span
+                    class="detail-field__value"
+                    id="detailHomeOpcoPointRatio"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">User ID</span>
+                  <span class="detail-field__value" id="detailUserId">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">BAN</span>
+                  <span class="detail-field__value" id="detailBan">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Identity (Type | Value)</span
+                  >
+                  <span class="detail-field__value" id="detailIdentity"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Source File</span>
+                  <span class="detail-field__value" id="detailSourceFile"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Row No</span>
+                  <span class="detail-field__value" id="detailRowNo">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Row Hash</span>
+                  <span class="detail-field__value" id="detailRowHash">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script th:inline="javascript">
+      // Care UI Module
+      var careUI = {
+        state: {
+          identifiedUser: null,
+          homeOpco: null,
+          totalRecords: 0
+        },
+
+        switchIdentifier: function() {
+          var selectedType = $('input[name="identifierType"]:checked').val();
+          var labelMap = {
+            'msisdn': 'Phone Number',
+            'twmUid': 'TWM UID',
+            'subid': 'SUB ID',
+            'aesTwmUid': 'AES TWM UID'
+          };
+          var placeholderMap = {
+            'msisdn': 'Enter phone number',
+            'twmUid': 'Enter TWM UID',
+            'subid': 'Enter SUB ID',
+            'aesTwmUid': 'Enter AES TWM UID'
+          };
+          $('#identifierLabel').text(labelMap[selectedType] || 'Identifier');
+          $('#identifierValue').attr('placeholder', placeholderMap[selectedType] || 'Enter identifier value');
+        },
+
+        identifyUser: function() {
+          var selectedType = $('input[name="identifierType"]:checked').val();
+          var identifierValue = $.trim($('#identifierValue').val());
+
+          if (!identifierValue) {
+            messagePopup('Please enter a ' + $('#identifierLabel').text());
+            return;
+          }
+
+          // Clear all hidden fields
+          $('#msisdn, #twmUid, #subid, #aesTwmUid').val('');
+          // Set the selected identifier
+          $('#' + selectedType).val(identifierValue);
+
+          // Store state
+          this.state.identifiedUser = {
+            type: selectedType,
+            value: identifierValue
+          };
+          this.state.homeOpco = $('#homeOpcoLabelVar').text() || 'TWM';
+
+          // Perform initial search
+          var formData = $('#customerCareForm').serialize();
+          var payload = formData + '&action=QUERY';
+          callAjax(/*[[@{/customer/care}]]*/, payload, this.renderTable.bind(this));
+        },
+
+        updateSummary: function(total) {
+          this.state.totalRecords = total;
+
+          var typeLabels = {
+            'msisdn': 'Phone',
+            'twmUid': 'TWM UID',
+            'subid': 'SUB ID',
+            'aesTwmUid': 'AES TWM UID'
+          };
+
+          $('#summaryIdentifierType').text(typeLabels[this.state.identifiedUser.type] || 'Unknown');
+          $('#summaryIdentifierValue').text(this.state.identifiedUser.value);
+          $('#summaryHomeOpco').text(this.state.homeOpco);
+          $('#summaryTotal').text(total);
+        },
+
+        showTransactionBlocks: function(show) {
+          $('#txTableCard').toggleClass('d-none', !show);
+        },
+
+        handleDatePreset: function(preset) {
+          var today = new Date();
+          var startDate, endDate;
+
+          switch (preset) {
+            case 'LAST_7':
+              startDate = new Date(today);
+              startDate.setDate(today.getDate() - 7);
+              endDate = today;
+              break;
+            case 'LAST_30':
+              startDate = new Date(today);
+              startDate.setDate(today.getDate() - 30);
+              endDate = today;
+              break;
+            case 'THIS_MONTH':
+              startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+              endDate = today;
+              break;
+            default:
+              // Custom - clear dates
+              $('#hoTimeStart').val('');
+              $('#hoTimeEnd').val('');
+              return;
+          }
+
+          // Format dates as YYYY-MM-DD
+          var formatDate = function(d) {
+            return d.toISOString().split('T')[0];
+          };
+          $('#hoTimeStart').val(formatDate(startDate));
+          $('#hoTimeEnd').val(formatDate(endDate));
+          // Auto-apply after preset selection
+          this.queueApply();
+        },
+
+        applyFilters: function() {
+          if (!this.state.identifiedUser) {
+            messagePopup('Please identify user first');
+            return;
+          }
+          // Serialize identification form + filter controls (which are outside the form)
+          var formData = $('#customerCareForm').serialize();
+          var filterData = $('#txTableCard').find('select, input').serialize();
+          var payload = formData + (filterData ? '&' + filterData : '') + '&action=QUERY';
+          callAjax(/*[[@{/customer/care}]]*/, payload, this.renderTable.bind(this));
+        },
+
+        // Debounced auto apply (prevents spamming server while typing)
+        queueApply: function() {
+          var self = this;
+          if (!self.state.identifiedUser) {
+            // Don't show popup repeatedly; just ignore until identified
+            return;
+          }
+          if (self._applyTimer) {
+            clearTimeout(self._applyTimer);
+          }
+          self._applyTimer = setTimeout(function() {
+            self.applyFilters();
+          }, 400); // 400ms debounce
+        },
+
+        clearFilters: function() {
+          // Clear remaining transaction filter fields only
+          var filterIds = ['transactionType', 'paymentMethod'];
+          filterIds.forEach(function(id){
+            var el = document.getElementById(id);
+            if (el) el.value='';
+          });
+          this.applyFilters();
+        },
+
+        renderTable: function(data) {
+          var self = this;
+          var defaultFormatter = function (value) {
+            if (value === null || value === undefined || value === '') {
+              return '--';
+            }
+            return value;
+          };
+
+          $('.table--customerCare').bootstrapTable('destroy');
+
+          if (!data.result || data.result.length === 0) {
+            // Show blocks but with empty state
+            this.updateSummary(0);
+            this.showTransactionBlocks(true);
+            $('#toolbarMessage').text('No transactions found for the selected identifier.');
+            $('#emptyState').removeClass('d-none');
+            return;
+          }
+
+          // Update summary and show all blocks
+          this.updateSummary(data.total || data.result.length);
+          this.showTransactionBlocks(true);
+          $('#emptyState').addClass('d-none');
+
+          $('#toolbarMessage').text('Click a row to view transaction details. Total: ' + data.total);
+
+          $('.table--customerCare').bootstrapTable({
+            columns: [
+              { field: 'transactionId', title: 'Transaction ID', class: 'w16', halign: 'center', formatter: defaultFormatter },
+              { field: 'orderId', title: 'Order ID', class: 'w16', halign: 'center', formatter: defaultFormatter },
+              { field: 'rewardName', title: 'Reward Name', class: 'w20', halign: 'center', formatter: defaultFormatter },
+              { field: 'rewardType', title: 'Reward Type', class: 'w14', align: 'center', formatter: defaultFormatter },
+              { field: 'transactionType', title: 'Transaction Type', class: 'w14', align: 'center', formatter: defaultFormatter },
+              { field: 'transactionStatus', title: 'Status', class: 'w10', align: 'center', formatter: defaultFormatter },
+              { field: 'paymentMethod', title: 'Payment', class: 'w10', align: 'center', formatter: defaultFormatter },
+              { field: 'catalogOwner', title: 'Catalog Owner', class: 'w12', align: 'center', formatter: defaultFormatter },
+              { field: 'reportMonth', title: 'Report Month', class: 'w12', align: 'center', formatter: defaultFormatter },
+              { field: 'hoTime', title: 'HO Time', class: 'w16', align: 'center', formatter: defaultFormatter },
+              { field: 'coTime', title: 'CO Time', class: 'w16', align: 'center', formatter: defaultFormatter }
+            ],
+            sidePagination: 'server',
+            data: data.result || [],
+            pagination: true,
+            pageNumber: data.number,
+            pageSize: data.size,
+            pageList: [10, 20, 50, 100, 'All'],
+            totalRows: data.total,
+            sortName: data.name,
+            sortOrder: data.order,
+            onSort: function (name, order) {
+              var formData = $('#customerCareForm').serialize();
+              var filterData = $('#txTableCard').find('select, input').serialize();
+              var params = formData + (filterData ? '&' + filterData : '') + '&name=' + name + '&order=' + order + '&action=QUERY';
+              callAjax(/*[[@{/customer/care}]]*/, params, self.renderTable.bind(self));
+            },
+            onPageChange: function (number, size) {
+              var formData = $('#customerCareForm').serialize();
+              var filterData = $('#txTableCard').find('select, input').serialize();
+              var params = formData + (filterData ? '&' + filterData : '') + '&number=' + number + '&size=' + size + '&action=QUERY';
+              callAjax(/*[[@{/customer/care}]]*/, params, self.renderTable.bind(self));
+            },
+            onClickRow: function (row) {
+              self.openDetail(row);
+            }
+          });
+        },
+
+        openDetail: function(row) {
+          var display = function (value, fallback) {
+            if (value === null || value === undefined || value === '') {
+              return fallback !== undefined ? fallback : '--';
+            }
+            return value;
+          };
+
+          $('#detailTransactionId').text(display(row.transactionId));
+          $('#detailOrderId').text(display(row.orderId));
+          $('#detailRewardName').text(display(row.rewardName));
+          $('#detailRewardType').text(display(row.rewardType));
+          $('#detailRewardQuantity').text(display(row.rewardQuantity));
+          $('#detailTransactionType').text(display(row.transactionType));
+          $('#detailStatus').text(display(row.transactionStatus));
+          $('#detailReportMonth').text(display(row.reportMonth));
+          $('#detailPaymentMethod').text(display(row.paymentMethod));
+
+          var paymentPoint = display(row.paymentPoint, '0');
+          var paymentCash = display(row.paymentCash, '0');
+          $('#detailPaymentBreakdown').text(paymentPoint + ' | ' + paymentCash);
+          $('#detailPaymentCurrency').text(display(row.paymentCurrency));
+
+          var refundPoint = display(row.refundPoint, '0');
+          var refundCash = display(row.refundCash, '0');
+          $('#detailRefundAmount').text(refundPoint + ' | ' + refundCash);
+          $('#detailRefundCurrency').text(display(row.refundCurrency));
+
+          $('#detailCatalogOwner').text(display(row.catalogOwner));
+          $('#detailHomeOpco').text(display(row.homeOpco));
+          $('#detailHoTime').text(display(row.hoTime));
+          $('#detailCoTime').text(display(row.coTime));
+          $('#detailTransactionTime').text(display(row.transactionTime));
+
+          var pricePoint = display(row.pricePoint, '0');
+          var priceCash = display(row.priceCash, '0');
+          $('#detailPriceBreakdown').text(pricePoint + ' | ' + priceCash);
+          $('#detailPriceCurrency').text(display(row.priceCurrency));
+          $('#detailDefaultMargin').text(display(row.defaultMarginPercentage));
+          $('#detailAdditionalMargin').text(display(row.additionalMarginPercentage));
+          $('#detailDiscount').text(display(row.discountPercentage));
+          $('#detailCatalogOwnerFx').text(display(row.catalogOwnerCurrencyExchangeRate));
+          $('#detailCatalogOwnerPointRatio').text(display(row.catalogOwnerPointToCurrencyRatio));
+          $('#detailHomeOpcoFx').text(display(row.homeOpcoCurrencyExchangeRate));
+          $('#detailHomeOpcoPointRatio').text(display(row.homeOpcoPointToCurrencyRatio));
+
+          $('#detailUserId').text(display(row.userId));
+          $('#detailBan').text(display(row.ban));
+          var identity = display(row.identityType, '--') + ' | ' + display(row.identityValue, '--');
+          $('#detailIdentity').text(identity);
+          $('#detailSourceFile').text(display(row.sourceFile));
+          $('#detailRowNo').text(row.rowNo !== null && row.rowNo !== undefined ? row.rowNo : '--');
+          $('#detailRowHash').text(display(row.rowHash));
+
+          $('#transactionDetailModal').modal('show');
+        },
+
+        resetAll: function() {
+          // Clear identification form
+          $('#customerCareForm')[0].reset();
+          $('#identifierValue').val('');
+          $('#msisdn, #twmUid, #subid, #aesTwmUid').val('');
+          $('input[name="identifierType"][value="msisdn"]').prop('checked', true).closest('label').addClass('active');
+          $('input[name="identifierType"]').not('[value="msisdn"]').closest('label').removeClass('active');
+
+          // Clear filter fields
+          var filterIds = ['transactionType', 'paymentMethod'];
+          for (var i = 0; i < filterIds.length; i++) {
+            var el = document.getElementById(filterIds[i]);
+            if (el) el.value = '';
+          }
+
+          // Hide transaction card
+          this.showTransactionBlocks(false);
+
+          // Reset state
+          this.state.identifiedUser = null;
+          this.state.totalRecords = 0;
+
+          // Clear table
+          $('.table--customerCare').bootstrapTable('destroy');
+          $('#toolbarMessage').text('No transactions to display. Please perform a search.');
+
+          // Reset identifier type display
+          this.switchIdentifier();
+        }
+      };
+
+      // Initialize on page load
+      $(document).ready(function() {
+        careUI.switchIdentifier();
+
+        // Bind auto-filter triggers
+        $('#transactionType, #paymentMethod').on('change', function() {
+          careUI.queueApply();
+        });
+
+        // Initialize watermark with user information
+        var userInfo = /*[[${session.userInfo}]]*/ null;
+        if (userInfo) {
+          var watermarkText = userInfo.userName + ' - ' + userInfo.departmentName;
+          if (userInfo.roleName) {
+            watermarkText += ' - ' + userInfo.roleName;
+          }
+          watermarkText += ' - ' + new Date().toLocaleString('zh-TW', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+          getWatermarkInit(watermarkText);
+        } else {
+          // Fallback watermark if no user session
+          getWatermarkInit('Customer Care - ' + new Date().toLocaleDateString('zh-TW'));
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+.container-fluid--c .table {
+	background-color: white; /* White background for tables */
+	border-collapse: collapse; /* Remove gaps in the table */
+}
+
+.container-fluid--c .table th, .container-fluid--c .table td {
+	border: 1px solid #ddd; /* Light borders for table cells */
+	padding: 8px; /* Padding for table cells */
+}
+
+.container-fluid--c .table th {
+	color: white; /* White text */
+}
+
+.container-fluid--c .table thead {
+	position: sticky;
+	top: 0;
+}
+
+.container-fluid--c .fixed-table-container {
+	overflow-y: auto;
+}
+
+.container-fluid--c .fixed-table-pagination {
+	zoom: 1.3;
+}
+
+#page2 h1 {
+	padding-bottom: 10px; /* 標題下方間距 */
+	margin-bottom: 20px; /* 標題下方外間距 */
+}
+
+#page2 .row {
+	margin-bottom: 15px !important; /* 行間距 */
+}
+
+#page2 label {
+	font-weight: bold; /* 加粗標籤文字 */
+	margin-bottom: 5px; /* 標籤與其他元素的間距 */
+}
+
+#page2 .form-group {
+	display: flex;
+	align-items: center !important;
+	margin-bottom: 15px !important;
+}
+
+#page2 .card-header {
+	padding: 10px; /* 卡片頭部間距 */
+}

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<body layout:fragment="content">
+
+	<style>
+.search-criteria label {
+	font-weight: bold;
+	margin-bottom: 15px;
+}
+
+.form-inline {
+	display: flex;
+	flex-flow: row wrap;
+	align-items: center;
+	justify-content: space-around;
+	margin-bottom: 20px;
+}
+
+.btn-primary {
+	padding: 0.375rem 0.75rem;
+}
+
+.form-group {
+	margin-right: 10px;
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.form-control {
+	display: block;
+	width: auto;
+	vertical-align: middle;
+}
+
+.btn-primary {
+	padding: 0.375rem 0.75rem;
+}
+
+#requestId {
+	width: 300px; /* 或您希望的任何固定宽度 */
+}
+
+.form-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+.form-label {
+	margin-right: 5px;
+}
+
+.btn-primary {
+	padding: 0.375rem 0.75rem;
+}
+
+.form-group.text-center {
+	text-align: center;
+}
+
+#requestId {
+	width: 300px;
+}
+
+.bootstrap-table .table th:nth-child(4), .bootstrap-table .table td:nth-child(4),
+	.bootstrap-table .table th:nth-child(6), .bootstrap-table .table td:nth-child(6)
+	{
+	width: 7rem;
+}
+
+.bootstrap-table .table th:nth-child(5), .bootstrap-table .table td:nth-child(5),
+	.bootstrap-table .table th:nth-child(7), .bootstrap-table .table td:nth-child(7)
+	{
+	width: 10rem;
+}
+
+.bootstrap-table .table th:nth-child(8), .bootstrap-table .table td:nth-child(8)
+	{
+	width: 14rem;
+}
+
+@media ( max-height :737.6px) {
+	tbody {
+		height: 80vh;
+	}
+}
+
+@media ( max-height :713.6px) {
+	tbody {
+		height: 75vh;
+	}
+}
+
+@media ( max-height :693.6px) {
+	tbody {
+		height: 85vh;
+	}
+}
+
+@media ( max-height :593.6px) {
+	tbody {
+		height: 60vh;
+	}
+}
+
+@media ( max-height :513.6px) {
+	tbody {
+		height: 65vh;
+	}
+}
+
+@media ( max-height :641px) {
+	tbody {
+		height: 70vh;
+	}
+}
+
+@media ( max-height :593px) {
+	tbody {
+		height: 75vh;
+	}
+}
+
+@media ( max-height :473px) {
+	tbody {
+		height: 25vh;
+	}
+}
+
+@media ( height :833px) {
+	tbody {
+		height: 95vh;
+	}
+}
+
+@media ( height :773px) {
+	tbody {
+		height: 75vh;
+	}
+}
+
+@media ( height :737px) {
+	tbody {
+		height: 105vh;
+	}
+}
+</style>
+	<div class="text-left">
+		<h1 class="font-size-22 font-weight-bold"
+			style="color: rgb(89, 89, 89);">查詢需求單</h1>
+	</div>
+
+
+
+	<div class="container-fluid px-3 py-3" style="font-size: 18px;">
+
+
+		<div class="search-criteria">
+			<label class="col-auto col-form-label font-weight-bold">選擇查詢條件:</label>
+		</div>
+		<form id="searchForm" class="">
+			<div class="form-inline">
+				<div class="form-group">
+					<label for="executeAccountId" class="form-label">設定者(SYSTEM_ADMIN):</label>
+					<select class="form-control" id="executeAccountId"
+						name="executeAccountId">
+						<option value="">請選擇</option>
+						<option value="0">排程執行</option>
+						<option th:each="executeAccount : ${executeAccountList}"
+							th:value="${executeAccount.accountId}"
+							th:text="${executeAccount.userName}"></option>
+
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="accountId" class="form-label">被設定者:</label> <select
+						class="form-control" id="accountId" name="accountId">
+						<option value="">請選擇</option>
+						<option th:each="account : ${accountList}"
+							th:value="${account.accountId}" th:text="${account.userName}"></option>
+
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="requestId" class="form-label">需求單號:</label> <input
+						type="text" class="form-control" id="requestId" name="requestId">
+				</div>
+			</div>
+
+			<div class="text-center">
+
+				<button type="submit" class="btn btn-primary-blue btnrow-a"
+					onclick="findAccountActionHistoryList()">查詢</button>
+			</div>
+
+
+		</form>
+
+		<div class="table--c my-4 s ">
+			<table class="table--findAccountActionHistoryList table text-nowrap"
+				id="tableid2"></table>
+		</div>
+
+	</div>
+	<script th:inline="javascript">
+	
+    function findAccountActionHistoryList(obj) {
+       	
+    	obj = obj || $('form').serialize()+'&action=QUERY';
+    	callAjax([[@{findAccountActionHistory}]], obj, composeTable);
+
+    }
+
+	function composeTable(data) {
+		
+
+		$('.table--findAccountActionHistoryList').bootstrapTable('destroy');
+		$('.table--findAccountActionHistoryList')
+				.bootstrapTable(
+						{
+
+							columns : [
+									{
+										field : '',
+										title : '',
+										align : 'center',
+										class: 'w3',
+										formatter : function(value, row,
+												index) {
+											return (index + 1);
+										}
+									},
+									{
+										field : 'requestId',
+										title : '需求單號',
+										align : 'center',
+									},
+									{
+										field : 'executeContent',
+										title : '設定內容',
+										align : 'center',
+										
+									},
+									{
+										field : 'accountIdA',
+										title : '被設定者ID',										
+										align : 'center',
+										
+									},
+									{
+										field : 'userNameA',
+										title : '被設定者',
+										align : 'center',
+										
+									},
+									{
+										field : 'executeAccountId',
+										title : '設定者ID',
+										align : 'center',
+										
+									},
+									{
+										field : 'executeUserName',
+										title : '設定者',
+										align : 'center',
+										
+									},
+									{
+										field : 'executeDate',
+										title : '設定時間',
+										align : 'center',
+										
+									}
+									 ],
+
+							sidePagination : 'client',
+							pagination : true,
+							pageList : [ 10, 25, 50, 100 ],
+							pageSize : 10,
+							data : data
+
+						});
+
+	}
+		
+	</script>
+</body>
+</html>

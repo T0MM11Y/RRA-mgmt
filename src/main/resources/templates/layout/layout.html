@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+  <head th:include="components/head :: head"></head>
+  <body class="layout-body">
+    <div class="mainPage-height-small">
+      <div class="mainPage layout-shell">
+        <header
+          class="layout-topbar"
+          data-role="layout-header"
+          th:insert="layout/topbar :: topbar"
+        ></header>
+        <aside
+          class="layout-sidebar"
+          data-role="layout-sidebar"
+          th:insert="layout/sidebar :: sidebar"
+        ></aside>
+        <div class="layout-main" th:insert="layout/main :: main"></div>
+      </div>
+    </div>
+
+    <div th:include="components/footer :: footer"></div>
+    <div th:include="components/loading :: loading"></div>
+    <div th:include="components/message :: messages"></div>
+
+    <script th:inline="javascript">
+      (function ($) {
+        var rootStyles = window.getComputedStyle(document.documentElement);
+        function readPxVar(name, fallback) {
+          var value = rootStyles.getPropertyValue(name);
+          var parsed = parseInt(value, 10);
+          return isNaN(parsed) ? fallback : parsed;
+        }
+
+        var SIDEBAR_WIDTH = readPxVar("--sidebar-width", 260);
+        var SIDEBAR_COLLAPSED_WIDTH = readPxVar(
+          "--sidebar-collapsed-width",
+          64
+        );
+        var TOPBAR_FALLBACK_HEIGHT = readPxVar("--topbar-height", 60);
+        var SIDEBAR_STORAGE_KEY = "sidebar-state";
+        var RESIZE_DEBOUNCE_MS = 100;
+        function getTopbarHeight() {
+          var $topbar = $(".layout-topbar");
+          var height = $topbar.outerHeight();
+          if (!height || height < TOPBAR_FALLBACK_HEIGHT) {
+            height = TOPBAR_FALLBACK_HEIGHT;
+          }
+          return height;
+        }
+
+        function getSidebarWidth() {
+          return $("body").hasClass("sidebar-collapse")
+            ? SIDEBAR_COLLAPSED_WIDTH
+            : SIDEBAR_WIDTH;
+        }
+
+        /* * Fungsi window.adjustContentLayout() DIHAPUS
+         * Layout sekarang 100% di-handle oleh CSS
+         * ( .layout-main { margin-left: ... } dan body.sidebar-collapse .layout-main { margin-left: ... } )
+         */
+        function storeSidebarState(isCollapsed) {
+          try {
+            window.sessionStorage.setItem(
+              SIDEBAR_STORAGE_KEY,
+              isCollapsed ? "collapsed" : "expanded"
+            );
+          } catch (ignore) {}
+        }
+
+        function restoreSidebarState() {
+          var storedValue = null;
+          try {
+            storedValue = window.sessionStorage.getItem(SIDEBAR_STORAGE_KEY);
+          } catch (ignore) {}
+          if (storedValue === "collapsed") {
+            $("body").addClass("sidebar-collapse");
+          }
+        }
+
+        function updateToggleButtons() {
+          var isCollapsed = $("body").hasClass("sidebar-collapse");
+          var labelExpanded = "Collapse sidebar";
+          var labelCollapsed = "Expand sidebar";
+
+          $(".sidebar-toggle")
+            .toggleClass("is-collapsed", isCollapsed)
+            .attr("aria-pressed", isCollapsed ? "true" : "false")
+            .attr("title", isCollapsed ? labelCollapsed : labelExpanded);
+
+          if (isCollapsed) {
+            $(".sidebar .dropdown").hide();
+          } else {
+            $(".sidebar-item.is-open > .dropdown").show();
+          }
+        }
+
+        function highlightActiveMenu() {
+          var currentPath = window.location.pathname || "/";
+          var bestMatch = null;
+          var bestLength = -1;
+
+          $(".sidebar-nav a").each(function () {
+            var href = $(this).attr("href");
+            if (!href || href === "#" || href.indexOf("javascript:") === 0) {
+              return;
+            }
+            if (/^https?:\/\//i.test(href)) {
+              return;
+            }
+
+            var normalized = href;
+            if (
+              normalized.length > 1 &&
+              normalized.charAt(normalized.length - 1) === "/"
+            ) {
+              normalized = normalized.substring(0, normalized.length - 1);
+            }
+
+            if (
+              currentPath === normalized ||
+              currentPath.indexOf(normalized + "/") === 0
+            ) {
+              if (normalized.length > bestLength) {
+                bestLength = normalized.length;
+                bestMatch = $(this);
+              }
+            }
+          });
+
+          if (bestMatch) {
+            bestMatch.addClass("active");
+            var $item = bestMatch.closest(".sidebar-item");
+            if ($item.length) {
+              $item.addClass("is-open");
+              if (!$("body").hasClass("sidebar-collapse")) {
+                $item.children(".dropdown").show();
+              }
+            }
+          }
+        }
+
+        function bindMenuHandlers() {
+          $(".sidebar-nav").on(
+            "click",
+            ".sidebar-link--parent",
+            function (event) {
+              event.preventDefault();
+              var $parent = $(this).closest(".sidebar-item");
+              var $submenu = $parent.children(".dropdown");
+              var isOpen = $parent.hasClass("is-open");
+
+              if (isOpen) {
+                $submenu.stop(true, true).slideUp(180);
+                $parent.removeClass("is-open");
+              } else {
+                $submenu.stop(true, true).slideDown(180);
+                $parent.addClass("is-open");
+              }
+            }
+          );
+        }
+
+        function initFileUploadWatcher() {
+          $(".mainPage").on("change", ".fileUpload__input", function () {
+            if (!this.files || !this.files.length) {
+              return;
+            }
+
+            var file = this.files[0];
+            var fileType = file.type;
+            var fileName = file.name;
+            var $this = $(this);
+            var $fileText = $this
+              .siblings(".fileUpload__texts")
+              .children(".fileUpload__text");
+
+            var isPdf =
+              $this.hasClass("fileUpload__input--pdf") &&
+              fileType === "application/pdf";
+            var isXlsx =
+              $this.hasClass("fileUpload__input--xlsx") &&
+              fileType ===
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var isCsv = $this.hasClass("fileUpload__input--csv");
+
+            if (isPdf || isXlsx || isCsv) {
+              $fileText.html(fileName);
+            } else {
+              $this.val("");
+              $fileText.html("Drop your file here");
+              $("#messageModal")
+                .find(".modal-body")
+                .html("Unsupported file type. Please upload a valid file.");
+              $("#messageModal").modal("show");
+            }
+          });
+        }
+
+        function initSessionMonitor() {
+          if (typeof fetch !== "function") {
+            return;
+          }
+
+          if (window.__sessionMonitorTimer) {
+            window.clearInterval(window.__sessionMonitorTimer);
+          }
+
+          window.__sessionMonitorTimer = window.setInterval(function () {
+            fetch("/api/sessionTime", { credentials: "same-origin" })
+              .then(function (response) {
+                return response.json();
+              })
+              .then(function (data) {
+                if (data === false) {
+                  try {
+                    var request = indexedDB.deleteDatabase("myDatabase");
+                    request.onsuccess = function () {};
+                  } catch (ignore) {}
+                }
+              })
+              .catch(function () {});
+          }, 7260000);
+        }
+
+        function initZoomSupport() {
+          var viewportElement = document.getElementById("page-content");
+          if (!viewportElement || typeof getZoom !== "function") {
+            return;
+          }
+
+          function applyZoom() {
+            viewportElement.style.zoom = "normal";
+            viewportElement.style.zoom = getZoom();
+          }
+
+          applyZoom();
+          $(window).on("resize.layoutZoom", function () {
+            applyZoom();
+          });
+        }
+
+        /* Fungsi debounceResize() DIHAPUS */
+        $(function () {
+          restoreSidebarState();
+          bindMenuHandlers();
+          highlightActiveMenu();
+          initFileUploadWatcher();
+          initSessionMonitor();
+          initZoomSupport();
+          updateToggleButtons();
+          /* Pemanggilan adjustContentLayout() DIHAPUS */
+
+          $(document).on("click", ".sidebar-toggle", function (event) {
+            event.preventDefault();
+            $("body").toggleClass("sidebar-collapse");
+            var isCollapsed = $("body").hasClass("sidebar-collapse");
+            storeSidebarState(isCollapsed);
+            updateToggleButtons();
+            /* Pemanggilan adjustContentLayout() DIHAPUS */
+          });
+
+          /* Event listener $(window).on("resize.layout") DIHAPUS */
+
+          $("#fa-sign-out").on("click", function () {
+            try {
+              indexedDB.deleteDatabase("myDatabase");
+            } catch (ignore) {}
+          });
+        });
+      })(jQuery);
+    </script>
+  </body>
+</html>

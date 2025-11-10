@@ -1,0 +1,213 @@
+# ===============================================
+# Spring Boot Maven Project - .gitignore
+# ===============================================
+
+# ====================
+# Maven Build Output
+# ====================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Exclude specific JAR from gitignore if needed
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ====================
+# Logs & Temp Files
+# ====================
+logs/
+*.log
+*.log.*
+*.log.gz
+*.log.zip
+
+# Application logs
+spring.log
+application.log
+debug.log
+error.log
+
+# ====================
+# Tomcat/Server Work Directory
+# ====================
+work/
+Tomcat/
+Tomcat-*/
+
+# ====================
+# IDE Specific Files
+# ====================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.metadata
+.factorypath
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.recommenders
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# ====================
+# OS Specific Files
+# ====================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ====================
+# Java & Spring Boot
+# ====================
+
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.nar
+*.ear
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# Spring Boot DevTools
+.spring-boot-devtools.properties
+
+# ====================
+# Application Specific
+# ====================
+
+# Source file uploads/processing
+SourceFile/
+rs/tokenValueRs.txt
+
+# Database temp files (if not needed in version control)
+# dbTemp/
+
+# SSL/Certificate files (NEVER commit these!)
+*.jks
+*.p12
+*.pem
+*.key
+*.crt
+ssl/
+
+# Configuration files with secrets (use encrypted versions or env vars instead)
+# application-prod.properties
+# application-uat.properties
+
+# ====================
+# Node/Frontend (if applicable)
+# ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ====================
+# Build Tools
+# ====================
+
+# Maven wrapper
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ====================
+# Testing & Coverage
+# ====================
+*.coverage
+.cache
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+coverage/
+*.cover
+*.py,cover
+
+# ====================
+# Documentation Build Output
+# ====================
+docs/_build/
+site/
+
+# ====================
+# Environment Variables
+# ====================
+.env
+.env.local
+.env.*.local
+
+# ====================
+# Misc
+# ====================
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.iml
+.DS_Store

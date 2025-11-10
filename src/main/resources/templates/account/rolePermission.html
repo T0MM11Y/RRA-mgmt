@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<body layout:fragment="content">
+	<div class="text-left">
+		<h1 class="display-5">權限控管</h1>
+	</div>
+	<div class="container-fluid px-3 py-3">
+		<form method="post">
+			<div class="pl-lg-4">
+				<div class="row justify-content-center">
+					<div class="col-lg-8">
+						<div class="form-group">
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" class="custom-control-input" id="action1"
+									name="action" value="1" th:checked="${action eq 1}" /> <label
+									class="custom-control-label" for="action1">新增角色權限</label>
+							</div>
+							<div class="custom-control custom-radio custom-control-inline">
+								<input type="radio" class="custom-control-input" id="action2"
+									name="action" value="2" th:checked="${action eq 2}" /> <label
+									class="custom-control-label" for="action2">編輯角色權限</label>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row justify-content-center">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<input type="text" id="roleName" name="roleName" maxlength="20"
+								class="form-control form-control-alternative hidden" /> <select
+								id="roleId" name="roleId"
+								class="form-control form-control-alternative hidden">
+								<option value="">請選擇</option>
+								<option th:each="role : ${roleList}" th:value="${role.roleId}"
+									th:text="${role.roleName}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="col-lg-2">
+						<div class="row">
+							<button class="btn btn-primary" type="button"
+								th:onclick="'callAjax(\'' + @{saveRolePermission} + '\', null, refreshPage)'">確定</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card-body-step0-step1-step2-step3">
+				<div class="pl-lg-4">
+					<div class="row justify-content-center">
+						<div class="col-lg-8">
+							<div th:fragment="permission_menu" class="permission_menu w-100"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</div>
+
+	<script th:inline="javascript">
+        $(function() {
+        	$('[name=action]').on('click', function() {
+        		let value = $(this).val();
+
+        		$('.valid-err').remove();
+
+        		$('input[name=roleName]').toggle(value === '1');
+        		$('select[name=roleId]').toggle(value === '2');
+
+        		$('[name=roleName], [name=roleId]').val('');
+
+        		removeMenuList();
+        	});
+        	$('[name=action]:checked').click();
+
+        	$('select[name=roleId]').on('change', function() {
+        		let id = $(this).val();
+
+        		if(isNull(id)) {
+        			removeMenuList();
+        		} else {
+        			$('.permission_menu').load([[@{findRoleMenuList}]], {id: id});
+        		}
+        	});
+
+        	$('input[name=roleName]').on('change', function() {
+        		let name = $(this).val().toUpperCase();
+
+        		if(isNull(name)) {
+        			removeMenuList();
+        		} else {
+        			$(this).val(name);
+
+        			$('.permission_menu').load([[@{findRoleMenuList}]], {});
+        		}
+        	});
+        });
+
+        function removeMenuList() {
+        	$('.permission_menu').children().remove();
+        }
+    </script>
+</body>
+</html>

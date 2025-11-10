@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="components/head :: head">
+</head>
+
+<body>
+	<style>
+body {
+	overflow: hidden;
+}
+
+.night-sky {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: linear-gradient(to bottom, #050c1e 0%, #080c29 100%);
+}
+
+.night-sky__star {
+	background: #9EC1EB;
+	border-radius: 50%;
+	position: absolute;
+	z-index: 1;
+	box-shadow: rgb(236, 236, 236) 0px 0px 9px;
+}
+
+.night-sky__star--animated {
+	animation: twinkle 2s;
+}
+
+@keyframes twinkle {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(0);
+		opacity: 0;
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.night-sky__comet {
+	position: absolute;
+	z-index: 1;
+	width: 2px;
+	height: 45px;
+	background: linear-gradient(transparent, transparent, #FFF);
+	border-radius: 50%;
+	transform: rotate(-45deg);
+	opacity: 0;
+}
+
+.night-sky__comet--animated {
+	animation: cometShoot 8s;
+}
+
+@keyframes cometShoot {
+	0% {
+		opacity: .8;
+	}
+	100% {
+		height: 0;
+		opacity: 0.2;
+		transform: rotate(-45deg) translateY(3000px);
+	}
+}
+
+.night-sky__text {
+	position: absolute;
+	z-index: 2;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	color: #FFF;
+	font-size: 48px;
+}
+ 
+</style>
+	<script>
+	
+		$(function() {
+			init();
+			
+			 $('.night-sky').on('animationend', '.star', function () {
+				 let $this = $(this);
+				 $this.removeClass('night-sky__star--animated');
+					setTimeout(function() {
+						 $this.addClass('night-sky__star--animated');
+					}, 0);
+				 
+			});
+			 $('.night-sky').on('animationend', '.comet', function () {
+				 let $this = $(this);
+				 $this.removeClass('night-sky__comet--animated');
+					setTimeout(function() {
+						let top = genRandomArbitrary(0,300);
+						let left = genRandomArbitrary(0,800);
+						$this.css({'top': top + 'px', 'left': left + 'px'});
+						$this.addClass('night-sky__comet--animated');
+					}, 0);
+				 
+			}); 
+			 function init() {
+					for(let i = 0; i < 500; i++){
+						let wh = genRandomArbitrary(1,3);
+						let top = genRandomArbitrary(0,100);
+						let left = genRandomArbitrary(0,100);
+						let delayTime = genRandomArbitrary(1,20);
+						$('<div/>', {
+						    'class': 'night-sky__star night-sky__star--animated',
+				    	  css: {           
+			    		    'width': wh,
+			    		    'height': wh,
+			    		    'top': top + '%',
+			    			'left': left  + '%',
+			    		    'animation-delay': delayTime + 's'
+			    		  }
+						}).appendTo('.night-sky');
+						
+					}
+					
+					for(let i = 0; i < 10; i++){
+						let top = genRandomArbitrary(0,300);
+						let left = genRandomArbitrary(0,800);
+						let delayTime = genRandomArbitrary(1,20);
+						$('<div/>', {
+						    'class': 'night-sky__comet night-sky__comet--animated ',
+				    	  css: {           
+			    		    'top': top + 'px',
+			    			'left': left  + 'px',
+			    		    'animation-delay': delayTime + 's'
+			    		  }
+						}).appendTo('.night-sky');
+						
+					}
+			 }
+		});
+	</script>
+	<div class="night-sky">
+		<span class="night-sky__text" th:if="${errorVo != null}" th:utext="${errorVo.message}"></span>
+		<span class="night-sky__text" th:unless="${errorVo != null}">400</span>
+	</div>
+</body>
+</html>
+
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="components/head :: head">
+<title>登入中...</title>
+</head>
+
+<body>
+	<script th:inline="javascript">
+	$(function() {
+		$('#ntsso').submit();
+	});
+	</script>
+
+	<form id="ntsso" th:action="${url}" method="post">
+		<input type="hidden" name="Func" value="Login" />
+		<input type="hidden" name="SSO_SID" th:value="${sid}" />
+		<input type="hidden" name="SSO_Auth_Type" th:value="${authType}" />
+	</form>
+
+</body>
+</html>

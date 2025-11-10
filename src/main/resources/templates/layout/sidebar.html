@@ -1,0 +1,77 @@
+<div th:fragment="sidebar" xmlns:th="http://www.thymeleaf.org">
+  <nav class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar-body">
+      <ul class="sidebar-nav">
+        <li
+          class="sidebar-item"
+          th:each="menu : ${session.menuList}"
+          th:with="firstSub=${#lists.isEmpty(menu.subVos) ? null : menu.subVos[0]},
+                   linkUrl=${firstSub != null ? firstSub.url : null},
+                   isDirectLink=${firstSub != null and menu.name != null and menu.name.equalsIgnoreCase(firstSub.name)},
+                   isExternal=${linkUrl != null and linkUrl.matches('(?i)^https?://.*')},
+                   iconClass=${menu.menuEntity.menuId == 1 ? 'fa-home' :
+                               menu.menuEntity.menuId == 2 ? 'fa-external-link' :
+                               menu.menuEntity.menuId == 3 ? 'fa-globe' :
+                               menu.menuEntity.menuId == 4 ? 'fa-users' :
+                               menu.menuEntity.menuId == 5 ? 'fa-bar-chart' :
+                               menu.menuEntity.menuId == 6 ? 'fa-cog' : 'fa-folder'}"
+          th:classappend="${(!isDirectLink and menudata == menu.menuEntity.orderNo) ? ' is-open' : ''}"
+        >
+          <a
+            th:if="${isDirectLink}"
+            class="sidebar-link"
+            th:href="${linkUrl}"
+            th:title="${menu.name}"
+            th:attr="target=${isExternal} ? '_blank' : null, rel=${isExternal} ? 'noopener noreferrer' : null"
+          >
+            <span class="sidebar-icon">
+              <i
+                class="fa"
+                th:classappend="' ' + ${iconClass}"
+                aria-hidden="true"
+              ></i>
+            </span>
+            <span class="sidebar-text">[[${menu.name}]]</span>
+          </a>
+
+          <a
+            th:unless="${isDirectLink}"
+            href="javascript:void(0)"
+            class="sidebar-link sidebar-link--parent"
+            th:title="${menu.name}"
+          >
+            <span class="sidebar-icon">
+              <i
+                class="fa"
+                th:classappend="' ' + ${iconClass}"
+                aria-hidden="true"
+              ></i>
+            </span>
+            <span class="sidebar-text">[[${menu.name}]]</span>
+            <span class="sidebar-caret">
+              <i class="fa fa-angle-down" aria-hidden="true"></i>
+            </span>
+          </a>
+
+          <ul
+            class="dropdown"
+            th:if="${!isDirectLink}"
+            th:style="${menudata == menu.menuEntity.orderNo} ? 'display:block;' : 'display:none;'"
+          >
+            <li class="sidebar-subitem" th:each="subMenu : ${menu.subVos}">
+              <a
+                class="sidebar-sublink"
+                th:href="${subMenu.url}"
+                th:title="${subMenu.name}"
+                th:attr="target=${subMenu.url != null and subMenu.url.matches('(?i)^https?://.*')} ? '_blank' : null, rel=${subMenu.url != null and subMenu.url.matches('(?i)^https?://.*')} ? 'noopener noreferrer' : null"
+              >
+                <span class="sidebar-bullet"></span>
+                <span class="sidebar-text">[[${subMenu.name}]]</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>

@@ -1,0 +1,74 @@
+<div th:fragment="topbar" xmlns:th="http://www.thymeleaf.org">
+  <div class="topbar" role="banner">
+    <div class="topbar-section topbar-section--left">
+      <button
+        type="button"
+        class="sidebar-toggle"
+        aria-label="Toggle sidebar"
+        aria-pressed="false"
+      >
+        <i class="fa fa-bars"></i>
+      </button>
+      <div class="topbar-brand">
+        <a href="/" class="topbar-brand__logo" title="Home">
+          <img
+            th:src="@{'/img/TWM_Logo4.png'}"
+            alt="TWM Logo"
+            width="32"
+            height="32"
+          />
+        </a>
+        <div class="topbar-brand__text">
+          <span class="topbar-brand__title">
+            <span th:text="${session.userInfo.userName}">User</span>
+          </span>
+          <span
+            class="topbar-brand__subtitle"
+            th:text="${session.userInfo.departmentName}"
+          >
+            Department
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-section topbar-section--center">
+      <div class="topbar-center">
+        <img
+          th:src="@{'/img/WanderJoyDPV8DFbt.gif'}"
+          alt="WanderJoy"
+          width="100%"
+          height="30"
+        />
+      </div>
+    </div>
+    <div class="topbar-section topbar-section--right">
+      <div
+        class="topbar-user"
+        aria-label="Current role"
+        style="
+          font-size: 11px;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        "
+      >
+        <i
+          class="fa fa-user-shield"
+          aria-hidden="true"
+          style="font-size: 13px"
+        ></i>
+        <span
+          class="topbar-user-meta"
+          style="font-size: 11px; font-weight: 500; letter-spacing: 0.5px"
+          th:text="${session.userInfo != null ? session.userInfo.roleName : 'ROLE_GUEST'}"
+        ></span>
+      </div>
+
+      <a href="/logout" class="topbar-logout" id="fa-sign-out">
+        <i class="fa fa-sign-out" aria-hidden="true"></i>
+        <span class="topbar-logout__text">Logout</span>
+      </a>
+    </div>
+  </div>
+</div>

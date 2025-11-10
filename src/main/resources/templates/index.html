@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}"
+>
+  <body layout:fragment="content">
+    <section class="home-hero">
+      <div class="home-hero__inner">
+        <span class="home-hero__kicker">Welcome Back</span>
+        <h1 class="home-hero__title">
+          <span th:text="${session.userInfo.userName}?:'用戶'"></span>
+        </h1>
+        <p class="home-hero__subtitle">歡迎來到 RRA 發幣管理後台系統</p>
+        <div class="home-hero__meta" role="status" aria-live="polite">
+          <span class="home-hero__meta-icon">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+          </span>
+          <span class="home-hero__time" id="homeHeroTime"
+            >-- -- --- ---- • --:--:--</span
+          >
+          <span class="home-hero__timezone" id="homeHeroTimezone"></span>
+        </div>
+      </div>
+    </section>
+
+    <script th:inline="javascript">
+      (function () {
+        var timeEl = document.getElementById("homeHeroTime");
+        var tzEl = document.getElementById("homeHeroTimezone");
+        if (!timeEl || !tzEl) {
+          return;
+        }
+
+        function updateClock() {
+          var now = new Date();
+          var dayFormatter = new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+          var timeFormatter = new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+          var zoneParts = new Intl.DateTimeFormat("en-US", {
+            timeZoneName: "short",
+          }).formatToParts(now);
+          var zone = zoneParts
+            .filter(function (part) {
+              return part.type === "timeZoneName";
+            })
+            .map(function (part) {
+              return part.value.toUpperCase();
+            })
+            .join("");
+
+          timeEl.textContent =
+            dayFormatter.format(now).replace(/,/g, "").toUpperCase() +
+            " • " +
+            timeFormatter.format(now);
+          tzEl.textContent = zone;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+      })();
+    </script>
+  </body>
+</html>

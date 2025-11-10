@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<body layout:fragment="content">
+	<div class="text-left">
+		<h1 class="display-5">帳號列表</h1>
+	</div>
+	<div class="container-fluid px-3 py-3">
+		<form name="accountForm" method="post">
+			<div class="form-group row justify-content-center">
+				<label for="roleId" class="col-auto col-form-label font-weight-bold">角色權限</label>
+				<div class="col-lg-4">
+					<select name="roleId" id="roleId" class="form-control">
+						<option value="">請選擇</option>
+						<option th:each="role : ${roleList}" th:value="${role.roleId}"
+							th:text="${role.roleName}"></option>
+					</select>
+				</div>
+				<label for="departmentId"
+					class="col-auto col-form-label font-weight-bold">部門別</label>
+				<div class="col-lg-4">
+					<select name="departmentId" id="departmentId" class="form-control">
+						<option value="">請選擇</option>
+						<option th:each="department : ${departmentList}"
+							th:value="${department.departmentId}"
+							th:text="${department.departmentName}"></option>
+					</select>
+				</div>
+			</div>
+			<div class="row mt-2">
+				<div class="col-lg-12 text-center">
+					<button type="button" class="btn btn-primary--c"
+						onclick="findAccountList()">查詢</button>
+				</div>
+			</div>
+		</form>
+		<div class="card-body-step0-step1-step2-step3">
+			<!-- 停用/啟用需求單號輸入欄位，採用Bootstrap樣式並預設隱藏 -->
+			<div id="requestNumberInput"
+				class="form-group row justify-content-end"
+				style="display: none; margin-top: 10px;">
+				<label for="requestId"
+					class="col-auto col-form-label font-weight-bold mark__required">停用/啟用需求單號：</label>
+				<div class="col-lg-4">
+					<input type="text" id="requestId" name="requestId"
+						class="form-control" maxlength="100">
+				</div>
+			</div>
+			<div class="table--c my-4">
+				<table class="table--accountList"></table>
+			</div>
+		</div>
+	</div>
+	<script th:inline="javascript">
+	
+	getWatermarkInit([[${session.userInfo.employeeId}]] + "(" + [[${session.userInfo.departmentName}]] + ")機敏個資");
+	
+        $(function() {
+        	$('.table--c').on('click', '.btn--editBtn', function() {
+        		        		       		
+        		let arg = $(this).data('id');
+
+        		formSubmit([[@{setting}]], {accountId: arg});
+        	});
+
+        	$('.table--c').on('click', '.btn--disabledBtn, .btn--enabledBtn', function() {
+        		
+        		if(!checkRequestId()){
+        			return;
+        		}
+        		
+        		let json = $(this).data('json');
+        		json['requestId']=$('#requestId').val();
+
+        		callAjax([[@{updateAccountStatus}]], json, afterChangeStatus);
+        	});
+        });
+
+        function findAccountList(obj) {
+        	obj = obj || $('form').serialize()+'&action=QUERY';
+
+        	callAjax([[@{findAccount}]], obj, composeTable);
+        }
+
+        function composeTable(data) {
+        	$('.table--accountList').bootstrapTable('destroy');
+
+        	$('.table--accountList').bootstrapTable({
+        		columns: [ //欄位設定
+        			{field: 'userName', title: '使用者名稱', class: 'w20', halign: 'center'},
+        			{field: 'email', title: 'E-MAIL', class: 'w20', halign: 'center'},
+        			{field: 'roleName', title: '角色權限', class: 'w15', align: 'center'},
+        			{field: 'departmentName', title: '部門', class: 'w20', halign: 'center'},
+        			{field: 'enabled', title: '帳號狀態', class: 'w15', align: 'center', formatter: statusFormatter},
+        			{field: '', title: '', class: 'w10', align: 'center', formatter: buttonFormatter}
+        		],
+        		// classes: 'table table-striped table-bordered table-dark',
+        		sidePagination: 'server',
+        		data: data.result,//資料
+        		pagination: true, //是否要分頁
+        		pageNumber: data.number, //初始化加載第一頁
+        		pageSize: data.size, //一頁顯示幾筆
+        		pageList: [10, 20, 50, 100, 'All'], //一頁顯示幾筆的選項
+        		totalRows: data.total,
+        		// search : true, //查詢
+        		checkboxHeader: false,
+        		sortName: data.name,
+        		sortOrder: data.order,
+        		/*onClickRow: function(row, $element, field) {
+        			console.log('row: ', row);
+
+        		},*/
+        		onSort: function(name, order) {
+        			// console.log('name: ' + name + ', order: ' + order);
+
+        			findAccountList({'name': name, 'order': order});
+        		},
+        		onPageChange: function(number, size) {
+        			// console.log('number: ' + number + ', size: ' + size);
+
+        			size = isNaN(size) ? this.totalRows : size;
+
+        			findAccountList({'number': number, 'size': size});
+        		},
+        		onLoadError: function(status, jqXHR) {
+        			// console.log('status: ' + status + ', jqXHR: ' + jqXHR);
+        		}
+        	});
+        	        	
+            // 如果表格有數據，則顯示輸入欄位
+            if (data && data.result && data.result.length > 0) {
+                $('#requestNumberInput').show();
+            } else {
+                $('#requestNumberInput').hide();
+            }
+        
+        }
+
+        function statusFormatter(value, row, index) {
+        	let elmI = '<i class="' + (row.enabled === 'Y' ? 'bg-success' : 'bg-danger') + '"></i>';
+
+        	let elmSpan = '<span>' + (row.enabled === 'Y' ? '啟動' : '停用') + '</span>';
+
+        	return '<span class="badge badge-dot">' + elmI + elmSpan + '</span>'
+        }
+
+        function buttonFormatter(value, row, index) {
+        	
+        	let editBtn = '<button type="button" class="btn btn-primary--c btn-sm btn--editBtn" data-id="' + row.accountId + '">編輯</button>';
+
+        	let disabledBtn = '<button type="button" class="btn btn-danger btn-sm ml-2 btn--disabledBtn" data-json=' + JSON.stringify({'accountId': row.accountId, 'status': 'N'}) + '>停用</button>';
+
+        	let enabledBtn = '<button type="button" class="btn btn-success btn-sm ml-2 btn--enabledBtn" data-json=' + JSON.stringify({'accountId': row.accountId, 'status': 'Y'}) + '>啟用</button>';
+
+        	return editBtn + (row.enabled === 'Y' ? disabledBtn : enabledBtn);
+        }
+
+        function afterChangeStatus() {
+        	findAccountList({});
+        }
+        
+        function checkRequestId(){
+    		let requestId = $('#requestId').val().trim();
+    		if(requestId === ''){
+				$
+				.confirm({
+					title : '資料輸入不完全',
+					titleClass : 'text-center d-block font-weight-bold text-warning2',
+					content : '您尚有以下資料輸入不完全：<br>'+'停用/啟用需求單號<br>',
+					buttons : {
+						確定 : {
+							text : '確定',
+							btnClass : 'btn-warning2 text-white'
+						}
+					}
+				});
+    			return false;
+    		}
+    		return true;
+        }
+    </script>
+</body>
+</html>

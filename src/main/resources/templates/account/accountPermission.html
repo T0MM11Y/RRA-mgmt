@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout/layout}">
+<body layout:fragment="content">
+	<div class="text-left">
+		<h1 class="display-5">帳號權限設定</h1>
+	</div>
+	<div class="container-fluid px-3 py-3">
+		<form method="post">
+			<div class="pl-lg-4">
+				<div class="row justify-content-center">
+					<div class="col-lg-6">
+						<div class="form-group">
+							<label class="form-control-label" for="accountId">帳號名稱</label>
+							<div class="form-inline">
+								<select id="accountId" name="accountId" class="form-control w80">
+									<option value="">請選擇</option>
+									<option th:each="account : ${accounts}"
+										th:value="${account.accountId}" th:text="${account.userName}"></option>
+								</select>
+								<button type="button" class="btn btn-primary mx-2"
+									th:onclick="'callAjax(\'' + @{saveAccountPermission} + '\', null, refreshPage)'">確定</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card-body-step0-step1-step2-step3">
+				<div class="pl-lg-4">
+					<div class="row justify-content-center">
+						<div class="col-lg-8">
+							<div th:fragment="permission_menu" class="permission_menu w-100"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</form>
+	</div>
+
+	<script th:inline="javascript">
+        $(function() {
+        	$('select[name=accountId]').on('change', function() {
+        		let id = $(this).val();
+
+        		if(isNull(id)) {
+        			removeMenuList();
+        		} else {
+        			$('.permission_menu').load([[@{findAccountMenuList}]], {id: id});
+        		}
+        	});
+        });
+
+        function removeMenuList() {
+        	$('.permission_menu').children().remove();
+        }
+    </script>
+</body>
+</html>

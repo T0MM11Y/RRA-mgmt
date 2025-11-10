@@ -1,0 +1,124 @@
+.rwd_pagination {
+    padding: 0;
+}
+
+.inline,.rwd_pagination>li,.basemenu_icon .other-keyword>li {
+    display: inline;
+}
+
+.rwd_pagination,.rwd_pagination>li>a,.rwd_pagination>li>span,.to_firstpage,.to_lastpages {
+    display: inline-block;
+}
+
+ins,a:hover,a:focus,a:active,.twm_abbr>p>span>a,.rwd_pagination>li>a,.rwd_pagination>li>span {
+    text-decoration: none;
+}
+
+.rwd_pagination>li.active>span {
+    background-color: #333;
+}
+
+.rwd_pagination>li.active>span {
+    background-color: #999;
+}
+
+.rwd_pagination>li.active>span {
+    color: #fff;
+}
+
+.rwd_pagination>li>a,.rwd_pagination>li>span {
+    color: #666;
+}
+
+.rwd_pagination>li>a:hover {
+    color: #ff6700;
+}
+
+.rwd_pagination>li.right-etc>a:before,.rwd_pagination>li.left-etc>a:before,.job_linklist>a:before,.to_firstpage>a:before,.to_lastpage>a:before {
+    font-family: "FontAwesome";
+}
+
+.rwd_pagination>li>a {
+    -webkit-transition: .3s;
+    -moz-transition: .3s;
+    -ms-transition: .3s;
+    -o-transition: .3s;
+    transition: .3s;
+}
+
+.rwd_pagination>li {
+    font-size: 18px;
+}
+
+.rwd_pagination.padding_none {
+    padding: 0 0 0 .2em;
+    margin-right: -.3em;
+}
+
+.rwd_pagination>li {
+    margin: 0 3px;
+}
+
+.rwd_pagination>li>a,.rwd_pagination>li>span {
+    line-height: 1;
+    margin-left: -9px;
+    padding: .3em;
+    border-radius: 2em;
+}
+
+.rwd_pagination {
+    margin: 2em 0 0;
+}
+
+.rwd_pagination>li.right-etc>a,.rwd_pagination>li.left-etc>a,.to_firstpage>a,.to_lastpage>a {
+    color: transparent;
+    width: 1.5em;
+}
+
+.rwd_pagination>li.left-etc>a,.rwd_pagination>li>a:last-child {
+    vertical-align: -.06em;
+}
+
+.rwd_pagination>li.left-etc>a {
+    font-size: 17px;
+}
+
+.rwd_pagination>li:last-child>a {
+    font-size: 22px;
+}
+
+.rwd_pagination>li.right-etc>a {
+    vertical-align: -1.15em;
+}
+
+/*.rwd_pagination>li.right-etc>a:before{content:"\f105";}*/
+.rwd_pagination>li.left-etc>a:before {
+    content: "\f104";
+}
+
+.to_firstpage>a:before {
+    content: "\f100";
+}
+
+.to_lastpage>a:before {
+    content: "\f101";
+}
+
+.tablet480_tips {
+    font-size: .9em;
+    margin: 0 0 7px;
+}
+
+.tablet480_tips>.fa {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+    font-size: 1.1em;
+    margin-right: .8em;
+}
+
+.rwd_pagination>li.left-etc>a:before,.rwd_pagination>li.right-etc>a:before,.to_firstpage>a:before,.to_lastpage>a:before {
+    color: #666;
+    font-size: 1.3em;
+}

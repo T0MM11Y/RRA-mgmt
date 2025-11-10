@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+    <body th:fragment="titlebar">
+	<div class="page-header">
+		<h1>發幣歸戶新增</h1>
+	</div>
+	<div class="container-fluid px-3 py-3">
+		<div class="page-section">
+			<div class="row justify-content-center pb-3">
+				<div class="col-sm-auto mb-3 mb-sm-0">
+					<label class="d-block">部門別</label>
+					<input style="width:150px" type="text" th:value="*{session.userInfo.departmentName}" disabled>
+				</div>
+				<div class="col-sm-auto mb-3 mb-sm-0">
+					<label class="d-block">申請人名稱</label>
+					<input style="width:150px" type="text" th:value="*{session.userInfo.userName}" disabled>
+				</div>
+				<div class="col-sm-auto">
+					<label class="d-block">活動專案歸屬</label>
+					<input style="width:150px" type="text" th:value="*{session.userInfo.buTag}" disabled>
+				</div>
+			</div>
+		</div>
+     </div>		
+		
+</body>
+</html>
