@@ -2,6 +2,13 @@ package com.twm.mgmt.persistence.dao.impl;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,6 +123,52 @@ public class TransactionRecordDaoImpl implements TransactionRecordDao {
 		List<Object[]> rows = nativeQuery.getResultList();
 
 		return rows.stream().map(this::mapRowToDto).collect(Collectors.toList());
+	}
+
+	@Override
+	public String findLatestAesTwmUidByUserId(String userId) {
+		if (StringUtilsEx.isBlank(userId)) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT tr.IDENTITY_VALUE ");
+		sb.append("FROM ").append(MoDbConfig.ACCOUNT_SCHEMA).append(".TRANSACTION_RECORD tr ");
+		sb.append("WHERE tr.USER_ID = :userId ");
+		sb.append("AND tr.IDENTITY_VALUE IS NOT NULL ");
+		sb.append("ORDER BY tr.TRANSACTION_TIME DESC");
+		Query query = entityManager.createNativeQuery(sb.toString());
+		query.setParameter("userId", userId);
+		query.setMaxResults(1);
+		@SuppressWarnings("unchecked")
+		List<Object> list = query.getResultList();
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		Object v = list.get(0);
+		return v == null ? null : v.toString();
+	}
+
+	@Override
+	public String findLatestUserIdByAesTwmUid(String aesTwmUid) {
+		if (StringUtilsEx.isBlank(aesTwmUid)) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT tr.USER_ID ");
+		sb.append("FROM ").append(MoDbConfig.ACCOUNT_SCHEMA).append(".TRANSACTION_RECORD tr ");
+		sb.append("WHERE tr.IDENTITY_VALUE = :aesTwmUid ");
+		sb.append("AND tr.USER_ID IS NOT NULL ");
+		sb.append("ORDER BY tr.TRANSACTION_TIME DESC");
+		Query query = entityManager.createNativeQuery(sb.toString());
+		query.setParameter("aesTwmUid", aesTwmUid);
+		query.setMaxResults(1);
+		@SuppressWarnings("unchecked")
+		List<Object> list = query.getResultList();
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		Object v = list.get(0);
+		return v == null ? null : v.toString();
 	}
 
 	@Override
@@ -352,11 +405,86 @@ public class TransactionRecordDaoImpl implements TransactionRecordDao {
 		return value == null ? null : value.toString();
 	}
 
+	private static final DateTimeFormatter OFFSET_WITH_SPACE =
+			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssXX");
+	private static final DateTimeFormatter OFFSET_WITH_SPACE_COLON =
+			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ssxxx");
+	private static final DateTimeFormatter SIMPLE_LOCAL =
+			DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 	private java.util.Date asDate(Object value) {
+		if (value == null) {
+			return null;
+		}
 		if (value instanceof java.util.Date) {
 			return (java.util.Date) value;
 		}
+		if (value instanceof OffsetDateTime) {
+			return java.util.Date.from(((OffsetDateTime) value).toInstant());
+		}
+		if (value instanceof ZonedDateTime) {
+			return java.util.Date.from(((ZonedDateTime) value).toInstant());
+		}
+		if (value instanceof LocalDateTime) {
+			return java.util.Date
+					.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+		}
+		if (value instanceof Instant) {
+			return java.util.Date.from((Instant) value);
+		}
+		if (value instanceof Number) {
+			return new java.util.Date(((Number) value).longValue());
+		}
+		if (value instanceof CharSequence) {
+			java.util.Date parsed = parseDateString(value.toString());
+			if (parsed != null) {
+				return parsed;
+			}
+		}
 		return null;
+	}
+
+	private java.util.Date parseDateString(String raw) {
+		if (raw == null) {
+			return null;
+		}
+		String text = raw.trim();
+		if (text.isEmpty()) {
+			return null;
+		}
+		try {
+			return java.util.Date.from(Instant.parse(text));
+		} catch (DateTimeParseException ignored) {
+			// fall through
+		}
+		try {
+			return java.util.Date.from(OffsetDateTime.parse(text).toInstant());
+		} catch (DateTimeParseException ignored) {
+			// fall through
+		}
+		try {
+			return java.util.Date.from(OffsetDateTime.parse(text, OFFSET_WITH_SPACE).toInstant());
+		} catch (DateTimeParseException ignored) {
+			// fall through
+		}
+		try {
+			return java.util.Date
+					.from(OffsetDateTime.parse(text, OFFSET_WITH_SPACE_COLON).toInstant());
+		} catch (DateTimeParseException ignored) {
+			// fall through
+		}
+		try {
+			LocalDateTime local = LocalDateTime.parse(text, SIMPLE_LOCAL);
+			return java.util.Date.from(local.atZone(ZoneId.systemDefault()).toInstant());
+		} catch (DateTimeParseException ignored) {
+			// fall through
+		}
+		try {
+			long epoch = Long.parseLong(text);
+			return new java.util.Date(epoch);
+		} catch (NumberFormatException ignored) {
+			return null;
+		}
 	}
 
 	private BigDecimal asBigDecimal(Object value) {

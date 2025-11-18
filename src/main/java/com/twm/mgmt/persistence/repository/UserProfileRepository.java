@@ -13,5 +13,6 @@ public interface UserProfileRepository extends JpaRepository<UserProfileEntity, 
     List<UserProfileEntity> findByMsisdnOrderByUpdateDateDesc(String msisdn);
 
     List<UserProfileEntity> findBySubidOrderByUpdateDateDesc(String subid);
-}
 
+    List<UserProfileEntity> findByAesTwmUidOrderByUpdateDateDesc(String aesTwmUid);
+}

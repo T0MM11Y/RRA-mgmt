@@ -1,55 +1,47 @@
-<!-- Copilot / AI agent guidance for the rra-mgmt repository -->
+# Copilot instructions for RRA-mgmt
 
-# Quick context
+This is a Spring Boot 3.4.x, Java 17 web app with server-side views (Thymeleaf) and JPA. It integrates with NT SSO, uses Jasypt for encrypted config values, and writes logs to the `logs/` tree.
 
-- This is a Spring Boot 3.4.x web application (Java 17). Main build is Maven (`pom.xml`).
-- Server-side views are Thymeleaf templates in `src/main/resources/templates/` and a shared layout at `templates/layout/layout.html`.
-- Controllers live in `src/main/java/com/twm/mgmt/controller`; services in `.../service`; persistence/DAO in `.../persistence`.
+## Build, run, debug
 
-# How the app is wired (big picture)
+- Build: Maven is canonical. Tests are skipped by default (see `pom.xml` properties). Enable tests with `-Dmaven.test.skip=false` if needed.
+- Run (profiles): Use Spring profiles `dev`, `uat`, `prod`. App commonly listens on 8443 with SSL. Provide `JASYPT_ENCRYPTOR_PASSWORD` when starting, or any `ENC(...)` values won’t decrypt.
+- Hot reload: Devtools is enabled (`application.properties`). Java/resources reload; static assets use LiveReload.
+- CSS lint: Node is used only for Stylelint via `package.json` (`npm run lint:css`).
 
-- HTTP MVC: controllers return `ModelAndView` for pages and `ResponseEntity<?>` for AJAX JSON responses (see `TransactionHistoryController`).
-- The DAO layer uses custom SQL builders in `persistence/dao/impl/TransactionRecordDaoImpl` (not purely Spring Data JPA queries). Follow `composeSql` / `composeParams` when changing filters or adding columns.
-- Export logic (CSV/XLSX) is implemented in `TransactionHistoryService` (methods `exportToCsv` / `exportToExcel`) and uses Apache Commons CSV / Apache POI. Front-end may post to `/customer/transactionHistory/export/*` (logs reference this path).
+## Architecture at a glance
 
-# Developer workflows (build / run / debug)
+- Web layer: `controller/` with MVC controllers returning views. Most controllers extend `BaseController` for common helpers (uniform `RespVo` responses, file download, URL builders). Example: `controller/LoginController.java`.
+- Cross-cutting: `interceptor/RraInterceptor` enforces session auth and permission checks, handles redirect-after-login. `aspect/AccountActionHistoryAspect` records audit history around account actions.
+- Service layer: Services extend `BaseService` for session-bound user info, config values, and common repository access. Example: `service/LoginService.java` assembles the per-user menu from role/account permissions.
+- Persistence: JPA repositories under `persistence/repository`, entities under `persistence/entity`, DTOs under `persistence/dto`, and DAOs for complex queries. Example repo with JPQL/native: `persistence/repository/ProgramRepository.java`.
+- Utilities: `utils/` contains shared helpers (e.g., `SpringUtils` for bean lookup, `JsonUtil`, `AESUtil`, mail/crypto/date helpers).
+- Views & assets: Templates in `src/main/resources/templates`, static assets in `static/`. Thymeleaf is enabled; Freemarker is disabled in `application-*.properties`.
 
-- Build locally: `mvn -DskipTests package` (pom sets `maven.test.skip=true` by default). To run tests, remove `-DskipTests` or edit the pom property.
-- Run in dev mode with hot reload: `mvn spring-boot:run`. DevTools is enabled in `src/main/resources/application.properties`.
-- Run packaged jar: `java -jar target/rra-mgmt-0.0.1-SNAPSHOT.jar` after a successful `mvn package`.
+## AuthN, session, and permissions
 
-# Project-specific conventions & patterns (for an AI agent)
+- NT SSO: See `controller/SsoController` (entry), `ws/nt/*` types, and `application-*.properties` (`nt.sso.*`).
+- Session model: `BaseService` pulls `UserInfoVo` from `HttpSession` via `RequestContextHolder`. `RraInterceptor` blocks unauthenticated requests and stores `redirectAfterLogin` to resume post-login.
+- Authorization: Permissions are menu-driven. After login, `LoginService.findMenuVo()` builds menu from role/account permission repos and stores it in session. `RraInterceptor.isPermission()` authorizes by matching the request URI against session menu URLs.
 
-- Templates: use Thymeleaf layout dialect. Pages declare `layout:decorate="~{layout/layout}"` and place content in `layout:fragment="content"`.
-- Inline Thymeleaf JS: the project uses Thymeleaf template expressions in JS blocks. To keep editor JS parsers happy, prefer the Thymeleaf inline-comment form when emitting URLs into JavaScript:
+## Configuration, environments, logging
 
-  callAjax(/_[[@{/customer/transactionHistory}]]_/, payload, renderTransactionTable);
+- Profiles: `application-{dev,uat,prod}.properties` configure DB, SSL keystores, mail, SSO, and external APIs. Many secrets are `ENC(...)` and require `JASYPT_ENCRYPTOR_PASSWORD` (Jasypt starter is on the classpath).
+- Logging: `logback-spring.xml` writes to `logs/{trace,debug,info,warn,error,fatal}` with daily rollovers; a `local` profile exists in logging. SQL logging is enabled in `dev/uat/prod` configs.
+- Ports & SSL: Defaults to 8443 with SSL; dev uses `ssl/DevAP2KeyStore.jks` on the classpath.
 
-  Using `/*[[@{...}]]*/` prevents VS Code / eslint from treating `@` as a JS decorator.
+## Conventions and patterns to follow
 
-- Session/state: controllers save filter state in HTTP session keys (see `SESSION_CONDITION_KEY` in `TransactionHistoryController`). If you change the session contract, update uses in controller + front-end logic.
-- Pagination + sorting: service layer normalizes paging (see `normalizePagination` in `TransactionHistoryService`) and returns a `QueryResultVo` consumed by front-end bootstrap table.
+- Controllers should extend `BaseController` and return `RespVo` via the provided helpers for consistency (e.g., `getErrorResponse()`, `getSuccessResponse(msg)`).
+- Services should extend `BaseService` and use its accessors for `accountId`, `roleId`, etc.; prefer injected repos, but `SpringUtils.getBean(...)` is used where DI is not straightforward.
+- For XSS/static analysis concerns, existing code often runs objects through ESAPI encode/decode before rendering (see `LoginController.error`). Preserve that behavior when touching similar flows.
+- Auditing: Account mutations are captured by `AccountActionHistoryAspect`; align new account-related operations with existing pointcuts or extend them.
 
-# Integration points & external dependencies
+## Useful entry points
 
-- Jasypt is included (`jasypt-spring-boot-starter`) — secrets/properties may be encrypted. Check `application-*.properties` and how Jasypt is configured for decrypting runtime properties.
-- Export libraries: `commons-csv`, `poi`/`poi-ooxml`, and `jxls` are used for CSV/XLSX export. Editing export behaviour should be done in `TransactionHistoryService` and the DAO `findForExport` query.
-- ESAPI is present for security utilities. Be careful when altering input/output handling.
+- App bootstrap: `com.twm.mgmt.Application`.
+- Request flow: `RraInterceptor` → Controllers (e.g., `LoginController`) → Services (e.g., `LoginService`) → Repositories (e.g., `ProgramRepository`).
+- Error and file responses: `BaseController`.
+- Session/user access: `BaseService`.
 
-# Files to examine for changes or to implement new features
-
-- Controller patterns: `src/main/java/com/twm/mgmt/controller/CustomerCareController.java` (unified search and transaction history)
-- Service + export: `src/main/java/com/twm/mgmt/service/TransactionHistoryService.java`
-- Customer care service: `src/main/java/com/twm/mgmt/service/CustomerCareService.java` (user identification and transaction search)
-- DAO SQL builder: `src/main/java/com/twm/mgmt/persistence/dao/impl/TransactionRecordDaoImpl.java`
-- Templates: `src/main/resources/templates/customer/customerCare.html` (unified single-page interface with identifier tabs) and shared layout `src/main/resources/templates/layout/layout.html` (contains global JS helpers such as `initFileUploadWatcher`).
-
-# Common gotchas discovered in this repo
-
-- Thymeleaf inline expressions like `[[@{/path}]]` inside JS will make VS Code show "Decorators are not valid here". Use `/*[[@{/path}]]*/` or the `/*[[...]]*/` inline comment form.
-- The project frequently uses server-side session to store user filter state — stateless refactors will need careful migration.
-- DAO uses hand-crafted SQL. Adding fields requires updating `composeSql`, `composeParams` and mapping DTOs.
-
-# If you need more info
-
-- Tell me which feature or file you want to change (controller, DAO, template, or export). I can produce targeted diffs (patches) and also update tests or add a small integration check.
+If any of the above is unclear (e.g., local SSO bypass for dev, keystore usage, or the expected Jasypt password), tell me what you’re trying to do and I’ll refine these instructions with the exact steps you need.

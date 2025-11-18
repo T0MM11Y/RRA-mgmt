@@ -1,0 +1,13 @@
+{
+  "name": "rra-mgmt",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "lint:css": "stylelint \"src/main/resources/static/css/**/*.css\""
+  },
+  "devDependencies": {
+    "stylelint": "^16.8.1",
+    "stylelint-config-standard": "^36.0.0",
+    "stylelint-order": "^6.0.4"
+  }
+}

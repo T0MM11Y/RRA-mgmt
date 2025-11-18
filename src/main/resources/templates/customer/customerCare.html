@@ -49,12 +49,12 @@
                 </button>
               </div>
             </div>
-            <div class="mb-3 px-3 pt-3">
-              <label class="d-block mb-2 font-weight-bold"
-                >Identifier Type</label
-              >
-              <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-primary active">
+            <div class="identifier-tabs">
+              <label class="d-block mb-2 font-weight-bold">
+                Identifier Type
+              </label>
+              <div class="pill-tabs" role="tablist" aria-label="Identifier Type">
+                <label class="pill-tabs__option">
                   <input
                     type="radio"
                     name="identifierType"
@@ -63,9 +63,9 @@
                     autocomplete="off"
                     onchange="careUI.switchIdentifier()"
                   />
-                  Phone Number
+                  <span class="pill-tabs__text">Phone Number</span>
                 </label>
-                <label class="btn btn-outline-primary">
+                <label class="pill-tabs__option">
                   <input
                     type="radio"
                     name="identifierType"
@@ -73,9 +73,9 @@
                     autocomplete="off"
                     onchange="careUI.switchIdentifier()"
                   />
-                  TWM UID
+                  <span class="pill-tabs__text">TWM UID</span>
                 </label>
-                <label class="btn btn-outline-primary">
+                <label class="pill-tabs__option">
                   <input
                     type="radio"
                     name="identifierType"
@@ -83,9 +83,9 @@
                     autocomplete="off"
                     onchange="careUI.switchIdentifier()"
                   />
-                  SUB ID
+                  <span class="pill-tabs__text">SUB ID</span>
                 </label>
-                <label class="btn btn-outline-primary">
+                <label class="pill-tabs__option">
                   <input
                     type="radio"
                     name="identifierType"
@@ -93,9 +93,9 @@
                     autocomplete="off"
                     onchange="careUI.switchIdentifier()"
                   />
-                  AES TWM UID
+                  <span class="pill-tabs__text">AES TWM UID</span>
                 </label>
-                <label class="btn btn-outline-primary">
+                <label class="pill-tabs__option">
                   <input
                     type="radio"
                     name="identifierType"
@@ -103,7 +103,7 @@
                     autocomplete="off"
                     onchange="careUI.switchIdentifier()"
                   />
-                  User ID
+                  <span class="pill-tabs__text">User ID</span>
                 </label>
               </div>
             </div>
@@ -189,32 +189,6 @@
                 Displaying <span id="summaryTotal">0</span> transactions for
                 user
               </p>
-              <div class="filter-card__subtitle">
-                <span class="mr-2"
-                  ><strong>MSISDN</strong>:
-                  <span id="summaryMsisdn">--</span></span
-                >
-                <span class="mr-2"
-                  ><strong>TWM UID</strong>:
-                  <span id="summaryTwmUid">--</span></span
-                >
-                <span class="mr-2"
-                  ><strong>SUB ID</strong>:
-                  <span id="summarySubid">--</span></span
-                >
-                <span class="mr-2"
-                  ><strong>AES TWM UID</strong>:
-                  <span id="summaryAesTwmUid">--</span></span
-                >
-                <span class="mr-2"
-                  ><strong>User ID</strong>:
-                  <span id="summaryUserId">--</span></span
-                >
-                <span class="mr-2"
-                  ><strong>Home OPCO</strong>:
-                  <span id="summaryHomeOpco">--</span></span
-                >
-              </div>
             </div>
             <div class="filter-card__actions">
               <button
@@ -313,226 +287,202 @@
               </button>
             </div>
             <div class="modal-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="detail-field">
-                    <span class="detail-field__label">Transaction ID</span>
-                    <span class="detail-field__value" id="detailTransactionId"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Order ID</span>
-                    <span class="detail-field__value" id="detailOrderId"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Reward Name</span>
-                    <span class="detail-field__value" id="detailRewardName"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Reward Type</span>
-                    <span class="detail-field__value" id="detailRewardType"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Reward Quantity</span>
-                    <span class="detail-field__value" id="detailRewardQuantity"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Transaction Type</span>
-                    <span class="detail-field__value" id="detailTransactionType"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Status</span>
-                    <span class="detail-field__value" id="detailStatus"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Report Month</span>
-                    <span class="detail-field__value" id="detailReportMonth"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Payment Method</span>
-                    <span class="detail-field__value" id="detailPaymentMethod"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Payment (Point | Cash)</span
-                    >
-                    <span
-                      class="detail-field__value"
-                      id="detailPaymentBreakdown"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Payment Currency</span>
-                    <span class="detail-field__value" id="detailPaymentCurrency"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Refund Amount (Point | Cash)</span
-                    >
-                    <span class="detail-field__value" id="detailRefundAmount"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Refund Currency</span>
-                    <span class="detail-field__value" id="detailRefundCurrency"
-                      >--</span
-                    >
-                  </div>
+              <div class="transaction-detail-grid">
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction ID</span>
+                  <span class="detail-field__value" id="detailTransactionId"
+                    >--</span
+                  >
                 </div>
-                <div class="col-md-6">
-                  <div class="detail-field">
-                    <span class="detail-field__label">Catalog Owner</span>
-                    <span class="detail-field__value" id="detailCatalogOwner"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Home OPCO</span>
-                    <span class="detail-field__value" id="detailHomeOpco"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">HO Time</span>
-                    <span class="detail-field__value" id="detailHoTime"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">CO Time</span>
-                    <span class="detail-field__value" id="detailCoTime"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Transaction Time</span>
-                    <span class="detail-field__value" id="detailTransactionTime"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Price (Point | Cash)</span
-                    >
-                    <span class="detail-field__value" id="detailPriceBreakdown"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Price Currency</span>
-                    <span class="detail-field__value" id="detailPriceCurrency"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Default Margin %</span>
-                    <span class="detail-field__value" id="detailDefaultMargin"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Additional Margin %</span>
-                    <span
-                      class="detail-field__value"
-                      id="detailAdditionalMargin"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Discount %</span>
-                    <span class="detail-field__value" id="detailDiscount"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Catalog Owner FX Rate</span
-                    >
-                    <span class="detail-field__value" id="detailCatalogOwnerFx"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Catalog Owner Point Ratio</span
-                    >
-                    <span
-                      class="detail-field__value"
-                      id="detailCatalogOwnerPointRatio"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Home OPCO FX Rate</span>
-                    <span class="detail-field__value" id="detailHomeOpcoFx"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Home OPCO Point Ratio</span
-                    >
-                    <span
-                      class="detail-field__value"
-                      id="detailHomeOpcoPointRatio"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">User ID</span>
-                    <span class="detail-field__value" id="detailUserId"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">BAN</span>
-                    <span class="detail-field__value" id="detailBan">--</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label"
-                      >Identity (Type | Value)</span
-                    >
-                    <span class="detail-field__value" id="detailIdentity"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Source File</span>
-                    <span class="detail-field__value" id="detailSourceFile"
-                      >--</span
-                    >
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Row No</span>
-                    <span class="detail-field__value" id="detailRowNo">--</span>
-                  </div>
-                  <div class="detail-field">
-                    <span class="detail-field__label">Row Hash</span>
-                    <span class="detail-field__value" id="detailRowHash"
-                      >--</span
-                    >
-                  </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Catalog Owner</span>
+                  <span class="detail-field__value" id="detailCatalogOwner"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Order ID</span>
+                  <span class="detail-field__value" id="detailOrderId">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Home OPCO</span>
+                  <span class="detail-field__value" id="detailHomeOpco">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Name</span>
+                  <span class="detail-field__value" id="detailRewardName"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">HO Time</span>
+                  <span class="detail-field__value" id="detailHoTime">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Type</span>
+                  <span class="detail-field__value" id="detailRewardType"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">CO Time</span>
+                  <span class="detail-field__value" id="detailCoTime">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Reward Quantity</span>
+                  <span class="detail-field__value" id="detailRewardQuantity"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction Time</span>
+                  <span class="detail-field__value" id="detailTransactionTime"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Transaction Type</span>
+                  <span class="detail-field__value" id="detailTransactionType"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Price (Point | Cash)</span
+                  >
+                  <span class="detail-field__value" id="detailPriceBreakdown"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Status</span>
+                  <span class="detail-field__value" id="detailStatus">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Price Currency</span>
+                  <span class="detail-field__value" id="detailPriceCurrency"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Report Month</span>
+                  <span class="detail-field__value" id="detailReportMonth"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Default Margin %</span>
+                  <span class="detail-field__value" id="detailDefaultMargin"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Payment Method</span>
+                  <span class="detail-field__value" id="detailPaymentMethod"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Additional Margin %</span>
+                  <span class="detail-field__value" id="detailAdditionalMargin"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Payment (Point | Cash)</span
+                  >
+                  <span class="detail-field__value" id="detailPaymentBreakdown"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Discount %</span>
+                  <span class="detail-field__value" id="detailDiscount">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Payment Currency</span>
+                  <span class="detail-field__value" id="detailPaymentCurrency"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Catalog Owner FX Rate</span
+                  >
+                  <span class="detail-field__value" id="detailCatalogOwnerFx"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Refund Amount (Point | Cash)</span
+                  >
+                  <span class="detail-field__value" id="detailRefundAmount"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Catalog Owner Point Ratio</span
+                  >
+                  <span
+                    class="detail-field__value"
+                    id="detailCatalogOwnerPointRatio"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Refund Currency</span>
+                  <span class="detail-field__value" id="detailRefundCurrency"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Home OPCO FX Rate</span>
+                  <span class="detail-field__value" id="detailHomeOpcoFx"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Home OPCO Point Ratio</span
+                  >
+                  <span
+                    class="detail-field__value"
+                    id="detailHomeOpcoPointRatio"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">User ID</span>
+                  <span class="detail-field__value" id="detailUserId">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">BAN</span>
+                  <span class="detail-field__value" id="detailBan">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label"
+                    >Identity (Type | Value)</span
+                  >
+                  <span class="detail-field__value" id="detailIdentity"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Source File</span>
+                  <span class="detail-field__value" id="detailSourceFile"
+                    >--</span
+                  >
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Row No</span>
+                  <span class="detail-field__value" id="detailRowNo">--</span>
+                </div>
+                <div class="detail-field">
+                  <span class="detail-field__label">Row Hash</span>
+                  <span class="detail-field__value" id="detailRowHash">--</span>
                 </div>
               </div>
             </div>
@@ -734,7 +684,6 @@
             $("#summaryTwmUid").text($("#twmUid").val() || "--");
             $("#summarySubid").text($("#subid").val() || "--");
             $("#summaryAesTwmUid").text($("#aesTwmUid").val() || "--");
-            $("#summaryUserId").text($("#userId").val() || "--");
             $("#summaryHomeOpco").text(this.state.homeOpco || "--");
             $("#summaryTotal").text(total);
 
@@ -933,18 +882,13 @@
 
             // Extract identifiers if enriched response used
             if (data && data.identifiers) {
-              if (data.identifiers.msisdn)
-                $("#msisdn").val(data.identifiers.msisdn);
-              if (data.identifiers.twmUid)
-                $("#twmUid").val(data.identifiers.twmUid);
-              if (data.identifiers.subid)
-                $("#subid").val(data.identifiers.subid);
-              if (data.identifiers.aesTwmUid)
-                $("#aesTwmUid").val(data.identifiers.aesTwmUid);
-              if (data.identifiers.userId)
-                $("#userId").val(data.identifiers.userId);
-              var wj = data.identifiers.wjUserId || data.identifiers.userId;
-              if (wj) $("#wjUserId").val(wj);
+              $("#msisdn").val(data.identifiers.msisdn || "");
+              $("#twmUid").val(data.identifiers.twmUid || "");
+              $("#subid").val(data.identifiers.subid || "");
+              $("#aesTwmUid").val(data.identifiers.aesTwmUid || "");
+              $("#wjUserId").val(
+                data.identifiers.wjUserId || data.identifiers.userId || ""
+              );
             }
 
             $(".table--customerCare").bootstrapTable("destroy");
@@ -1249,12 +1193,10 @@
             // Clear identification form
             $("#customerCareForm")[0].reset();
             $("#identifierValue").val("");
-            $("#msisdn, #twmUid, #subid, #aesTwmUid, #userId, #wjUserId").val(
-              ""
-            );
+            $("#msisdn, #twmUid, #subid, #aesTwmUid").val("");
             // Clear summary display
             $(
-              "#summaryMsisdn, #summaryTwmUid, #summarySubid, #summaryAesTwmUid, #summaryUserId"
+              "#summaryMsisdn, #summaryTwmUid, #summarySubid, #summaryAesTwmUid"
             ).text("--");
             $("#summaryHomeOpco").text("--");
             $("#summaryTotal").text("0");

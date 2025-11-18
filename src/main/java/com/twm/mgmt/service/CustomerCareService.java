@@ -14,6 +14,7 @@ import com.twm.mgmt.model.customer.CustomerSearchConditionVo;
 import com.twm.mgmt.model.customer.CustomerSearchResultVo;
 import com.twm.mgmt.persistence.entity.UserProfileEntity;
 import com.twm.mgmt.persistence.repository.UserProfileRepository;
+import com.twm.mgmt.persistence.repository.TransactionRecordRepository;
 import com.twm.mgmt.utils.StringUtilsEx;
 
 @Service
@@ -21,12 +22,15 @@ public class CustomerCareService extends BaseService {
 
     private final UserProfileRepository userProfileRepository;
     private final TransactionHistoryService transactionHistoryService;
+    private final TransactionRecordRepository transactionRecordRepository;
 
     @Autowired
     public CustomerCareService(UserProfileRepository userProfileRepository,
-            TransactionHistoryService transactionHistoryService) {
+            TransactionHistoryService transactionHistoryService,
+            TransactionRecordRepository transactionRecordRepository) {
         this.userProfileRepository = userProfileRepository;
         this.transactionHistoryService = transactionHistoryService;
+        this.transactionRecordRepository = transactionRecordRepository;
     }
 
     @Transactional(readOnly = true)
@@ -90,6 +94,50 @@ public class CustomerCareService extends BaseService {
         return transactionHistoryService.findTransactionHistoryByAesTwmUid(condition);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getUserIdentifiers(CustomerCareConditionVo condition) {
+        List<UserProfileEntity> profiles;
+        if (StringUtilsEx.isNotBlank(condition.getAesTwmUid())) {
+            profiles = userProfileRepository.findByAesTwmUidOrderByUpdateDateDesc(condition.getAesTwmUid());
+        } else if (StringUtilsEx.isNotBlank(condition.getTwmUid())) {
+            profiles = userProfileRepository.findByTwmUidIgnoreCaseOrderByUpdateDateDesc(condition.getTwmUid());
+        } else if (StringUtilsEx.isNotBlank(condition.getMsisdn())) {
+            profiles = userProfileRepository.findByMsisdnOrderByUpdateDateDesc(condition.getMsisdn());
+        } else if (StringUtilsEx.isNotBlank(condition.getSubid())) {
+            profiles = userProfileRepository.findBySubidOrderByUpdateDateDesc(condition.getSubid());
+        } else {
+            profiles = Collections.emptyList();
+        }
+
+        java.util.Map<String, Object> meta = new java.util.LinkedHashMap<>();
+
+        if (!profiles.isEmpty()) {
+            UserProfileEntity p = profiles.get(0);
+            if (StringUtilsEx.isNotBlank(p.getMsisdn())) meta.put("msisdn", p.getMsisdn());
+            if (StringUtilsEx.isNotBlank(p.getTwmUid())) meta.put("twmUid", p.getTwmUid());
+            if (StringUtilsEx.isNotBlank(p.getSubid())) meta.put("subid", p.getSubid());
+            if (StringUtilsEx.isNotBlank(p.getAesTwmUid())) meta.put("aesTwmUid", p.getAesTwmUid());
+        } else {
+            // Fallback to echo back whatever identifier was provided, to avoid clearing UI
+            if (StringUtilsEx.isNotBlank(condition.getMsisdn())) meta.put("msisdn", condition.getMsisdn());
+            if (StringUtilsEx.isNotBlank(condition.getTwmUid())) meta.put("twmUid", condition.getTwmUid());
+            if (StringUtilsEx.isNotBlank(condition.getSubid())) meta.put("subid", condition.getSubid());
+            if (StringUtilsEx.isNotBlank(condition.getAesTwmUid())) meta.put("aesTwmUid", condition.getAesTwmUid());
+        }
+
+        // Populate userId: prefer request value; else resolve from transaction_record by AES TWM UID
+        if (StringUtilsEx.isNotBlank(condition.getUserId())) {
+            meta.put("userId", condition.getUserId());
+        } else if (StringUtilsEx.isNotBlank(condition.getAesTwmUid())) {
+            String userId = transactionRecordRepository.findLatestUserIdByAesTwmUid(condition.getAesTwmUid());
+            if (StringUtilsEx.isNotBlank(userId)) {
+                meta.put("userId", userId);
+            }
+        }
+
+        return meta.isEmpty() ? null : meta;
+    }
+
     private String resolveAesTwmUid(CustomerCareConditionVo condition) {
         List<UserProfileEntity> entities;
         if (StringUtilsEx.isNotBlank(condition.getTwmUid())) {
@@ -98,6 +146,10 @@ public class CustomerCareService extends BaseService {
             entities = userProfileRepository.findByMsisdnOrderByUpdateDateDesc(condition.getMsisdn());
         } else if (StringUtilsEx.isNotBlank(condition.getSubid())) {
             entities = userProfileRepository.findBySubidOrderByUpdateDateDesc(condition.getSubid());
+        } else if (StringUtilsEx.isNotBlank(condition.getUserId())) {
+            // Short-term approach: resolve AES TWM UID via transaction_record by USER_ID
+            String aes = transactionRecordRepository.findLatestAesTwmUidByUserId(condition.getUserId());
+            return StringUtilsEx.isNotBlank(aes) ? aes : null;
         } else {
             entities = Collections.emptyList();
         }
@@ -132,6 +184,8 @@ public class CustomerCareService extends BaseService {
         target.setTwmUid(source.getTwmUid());
         target.setSubid(source.getSubid());
         target.setAesTwmUid(source.getAesTwmUid());
+        target.setUserId(source.getUserId());
+        target.setIdentifierType(source.getIdentifierType());
         target.setTransactionId(source.getTransactionId());
         target.setOrderId(source.getOrderId());
         target.setRewardName(source.getRewardName());

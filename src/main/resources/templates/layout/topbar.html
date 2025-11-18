@@ -42,25 +42,10 @@
       </div>
     </div>
     <div class="topbar-section topbar-section--right">
-      <div
-        class="topbar-user"
-        aria-label="Current role"
-        style="
-          font-size: 11px;
-          line-height: 1;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        "
-      >
-        <i
-          class="fa fa-user-shield"
-          aria-hidden="true"
-          style="font-size: 13px"
-        ></i>
+      <div class="topbar-user" aria-label="Current role">
+        <i class="fa fa-user-shield topbar-user__icon" aria-hidden="true"></i>
         <span
           class="topbar-user-meta"
-          style="font-size: 11px; font-weight: 500; letter-spacing: 0.5px"
           th:text="${session.userInfo != null ? session.userInfo.roleName : 'ROLE_GUEST'}"
         ></span>
       </div>

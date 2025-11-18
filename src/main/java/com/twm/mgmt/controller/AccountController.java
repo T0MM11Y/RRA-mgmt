@@ -44,7 +44,9 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 public class AccountController extends BaseController {
 
+	private static final String MENU_DATA = "6";
 	private static final String FIND_ACCOUNT_LIST_URI = "/findAccount";
+	private static final String FIND_AP_ACCOUNT_LIST_URI = "/findAPAccount";
 	private static final String ROLE_PERMISSION_URI = "/rolePermission";
 	private static final String ACCOUNT_PERMISSION_URI = "/accountPermission";
 	private static final String FIND_ROLE_MENU_URI = "/findRoleMenuList";
@@ -52,6 +54,7 @@ public class AccountController extends BaseController {
 	private static final String SAVE_ROLE_PERMISSION_URI = "/saveRolePermission";
 	private static final String SAVE_ACCOUNT_PERMISSION_URI = "/saveAccountPermission";
 	private static final String ACCOUNT_SETTING_URI = "/setting";
+	private static final String AP_ACCOUNT_SETTING_URI = "/apAccountSetting";
 	private static final String SAVE_ACCOUNT_SETTING_URI = "/saveAccountSetting";
 	private static final String UPDATE_ACCOUNT_STATUS_URI = "/updateAccountStatus";
 	private static final String FIND_DEPARTMENT_LIST_URI = "/findDepartment";
@@ -65,11 +68,11 @@ public class AccountController extends BaseController {
 	@Autowired
 	private AccountService accountService;
 
-	@GetMapping(FIND_ACCOUNT_LIST_URI)
-	public ModelAndView findAccount() {
+	@GetMapping({ FIND_ACCOUNT_LIST_URI, FIND_AP_ACCOUNT_LIST_URI })
+	public ModelAndView findAccount(HttpServletRequest request) {
 		ModelAndView mv = new ModelAndView("account/findAccount");
-		mv.addObject("menudata", "6");
-		mv.addObject("menuop", "account/findAccount");
+		mv.addObject("menudata", MENU_DATA);
+		mv.addObject("menuop", resolveMenuOp(request, "account/findAccount"));
 		List<RoleVo> roleList = accountService.findRoleList();
 		List<DepartmentVo> departmentList = accountService.findDepartmentList();
 		mv.addObject("roleList", roleList);
@@ -77,7 +80,7 @@ public class AccountController extends BaseController {
 		return mv;
 	}
 
-	@PostMapping(FIND_ACCOUNT_LIST_URI)
+	@PostMapping({ FIND_ACCOUNT_LIST_URI, FIND_AP_ACCOUNT_LIST_URI })
 	public ResponseEntity<?> findAccount(AccountConditionVo condition, HttpServletRequest request) {
 		ActionType action = condition.getAction();
 		HttpSession session = request.getSession();
@@ -100,7 +103,7 @@ public class AccountController extends BaseController {
 	@GetMapping(ROLE_PERMISSION_URI)
 	public ModelAndView rolePermissionSetting() {
 		ModelAndView mv = new ModelAndView("account/rolePermission");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		mv.addObject("menuop", "account/rolePermission");
 		try {
 			mv.addObject("action", ActionType.ADD.getCode());
@@ -114,7 +117,7 @@ public class AccountController extends BaseController {
 	@GetMapping(ACCOUNT_PERMISSION_URI)
 	public ModelAndView accountPermissionSetting() {
 		ModelAndView mv = new ModelAndView("account/accountPermission");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		mv.addObject("menuop", "account/accountPermission");
 		try {
 			mv.addObject("accounts", accountService.findAccountList());
@@ -133,9 +136,14 @@ public class AccountController extends BaseController {
 				mv.addObject("vos", accountService.findRoleMenu(id));
 			} else {
 				AccountEntity account = accountService.getAccountEntity(id);
-				RoleEntity role = account.getRole();
-				mv.addObject("roleName", account == null ? null : new RoleVo(role).getRoleName());
-				mv.addObject("vos", accountService.findAccountMenu(id, role.getRoleId()));
+				if (account != null && account.getRole() != null) {
+					RoleEntity role = account.getRole();
+					mv.addObject("roleName", new RoleVo(role).getRoleName());
+					mv.addObject("vos", accountService.findAccountMenu(id, role.getRoleId()));
+				} else {
+					mv.addObject("roleName", null);
+					mv.addObject("vos", accountService.findAccountMenu(id, null));
+				}
 			}
 		} catch (Exception e) {
 			log.error("AccountController findMenuList: {}", e.getMessage(), e);
@@ -158,20 +166,19 @@ public class AccountController extends BaseController {
 		return getSuccessResponse("儲存成功");
 	}
 
-	@RequestMapping(value = ACCOUNT_SETTING_URI, method = { RequestMethod.GET, RequestMethod.POST })
+	@RequestMapping(value = { ACCOUNT_SETTING_URI, AP_ACCOUNT_SETTING_URI }, method = { RequestMethod.GET,
+			RequestMethod.POST })
 	public ModelAndView accountSetting(Long accountId, HttpServletRequest request) {
 		ModelAndView mv = new ModelAndView("account/accountSetting");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		try {
-			mv.addObject("vo", accountService.getAccount(accountId));
+			AccountVo accountVo = accountService.getAccount(accountId);
+			mv.addObject("vo", accountVo);
 			mv.addObject("roleList", accountService.findRoleList());
 			mv.addObject("departmentList", accountService.findDepartmentList());
-			if (accountService.getAccount(accountId).getAccountId() == null)
-				mv.addObject("menuop", "account/setting");
-			else
-				mv.addObject("menuop", "account/findAccount");
+			mv.addObject("menuop", determineAccountSettingMenuOp(request, accountVo));
 		} catch (Exception e) {
-			mv.addObject("menuop", "account/setting");
+			mv.addObject("menuop", resolveMenuOp(request, "account/setting"));
 			log.error("AccountController accountSetting: {}", e.getMessage(), e);
 		}
 		return mv;
@@ -206,7 +213,7 @@ public class AccountController extends BaseController {
 	@GetMapping(FIND_DEPARTMENT_LIST_URI)
 	public ModelAndView findDepartment() {
 		ModelAndView mv = new ModelAndView("account/findDepartment");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		mv.addObject("menuop", "account/findDepartment");
 		return mv;
 	}
@@ -234,7 +241,7 @@ public class AccountController extends BaseController {
 	@PostMapping(DEPARTMENT_SETTING_URI)
 	public ModelAndView departmentSetting(Long departmentId) {
 		ModelAndView mv = new ModelAndView("account/departmentSetting");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		mv.addObject("menuop", "account/findDepartment");
 		try {
 			mv.addObject("vo", accountService.getDepartment(departmentId));
@@ -273,7 +280,7 @@ public class AccountController extends BaseController {
 	@GetMapping(FIND_ACCOUNT_ACTION_HISTORY)
 	public ModelAndView findAccountActionHistory() {
 		ModelAndView mv = new ModelAndView("account/findAccountActionHistory");
-		mv.addObject("menudata", "6");
+		mv.addObject("menudata", MENU_DATA);
 		mv.addObject("menuop", "account/findAccountActionHistory");
 		mv.addObject("executeAccountList", accountService.getExecuteAccountList(1L));
 		mv.addObject("accountList", accountService.getAccountList());
@@ -293,6 +300,26 @@ public class AccountController extends BaseController {
 			log.error("AccountController findAccountActionHistory Error: {}", e.getMessage(), e);
 			return getErrorResponse();
 		}
+	}
+
+	private String determineAccountSettingMenuOp(HttpServletRequest request, AccountVo accountVo) {
+		boolean isNewAccount = accountVo == null || accountVo.getAccountId() == null;
+		String defaultMenuOp = isNewAccount ? "account/setting" : "account/findAccount";
+		return resolveMenuOp(request, defaultMenuOp);
+	}
+
+	private String resolveMenuOp(HttpServletRequest request, String defaultMenuOp) {
+		String requestUri = request == null ? null : request.getRequestURI();
+		if (requestUri == null) {
+			return defaultMenuOp;
+		}
+		if (requestUri.endsWith(FIND_AP_ACCOUNT_LIST_URI)) {
+			return "account/findAPAccount";
+		}
+		if (requestUri.endsWith(AP_ACCOUNT_SETTING_URI) && "account/setting".equals(defaultMenuOp)) {
+			return "account/apAccountSetting";
+		}
+		return defaultMenuOp;
 	}
 
 }

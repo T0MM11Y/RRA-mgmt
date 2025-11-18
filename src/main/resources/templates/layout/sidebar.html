@@ -1,37 +1,4 @@
 <div th:fragment="sidebar" xmlns:th="http://www.thymeleaf.org">
-  <!-- Reusable link renderer to normalize URLs and handle external/internal safely -->
-  <th:block th:fragment="menuLink(url, text, linkClass, isSub, iconClass)">
-    <th:block
-      th:with="
-        _raw=${url},
-        _trim=${_raw == null ? null : #strings.trim(_raw)},
-        _low=${_trim == null ? '' : _trim.toLowerCase()},
-        _empty=${_trim == null or _trim.isEmpty()},
-        _badProto=${!_empty and (_low.startsWith('javascript:') or _low.startsWith('data:') or _low.startsWith('vbscript:'))},
-        _external=${!_empty and (_low.startsWith('http://') or _low.startsWith('https://') or _low.startsWith('mailto:'))},
-        _normalized=${_empty or _badProto ? null : (_external or _trim.startsWith('/')) ? _trim : '/' + _trim},
-        _disabled=${_normalized == null},
-        _target=${_external and !_disabled ? '_blank' : '_self'},
-        _rel=${_external and !_disabled ? 'noopener noreferrer' : null},
-        _title=${_disabled ? 'Unavailable' : text}"
-    >
-      <a
-        th:class="${linkClass}"
-        th:classappend="${_disabled} ? ' ' + linkClass + '--disabled' : ''"
-        th:href="${_disabled} ? '#!' : @{${_normalized}}"
-        th:title="${_title}"
-        th:attr="target=${_target}, rel=${_rel}, aria-disabled=${_disabled} ? 'true' : null"
-      >
-        <span th:if="${!isSub}" class="sidebar-icon"
-          ><i class="fa" th:classappend="' ' + iconClass" aria-hidden="true"></i
-        ></span>
-        <span th:if="${isSub}" class="sidebar-bullet"></span>
-        <span class="sidebar-text">[[${text}]]</span>
-      </a>
-    </th:block>
-  </th:block>
-
-  <!-- Sidebar navigation built from DB-backed menu tree; URLs are normalized before rendering -->
   <nav class="sidebar" role="navigation" aria-label="Main navigation">
     <div class="sidebar-body">
       <ul class="sidebar-nav">
@@ -39,53 +6,74 @@
           class="sidebar-item"
           th:each="menu : ${session.menuList}"
           th:with="firstSub=${#lists.isEmpty(menu.subVos) ? null : menu.subVos[0]},
-                   isDirect=${firstSub != null and menu.name != null and menu.name.equalsIgnoreCase(firstSub.name)},
+                   rawLinkUrl=${firstSub != null ? firstSub.url : null},
+                   linkUrl=${#strings.isEmpty(rawLinkUrl) ? null : (rawLinkUrl.matches('(?i)^https?://.*') or rawLinkUrl.startsWith('/')) ? rawLinkUrl : '/' + rawLinkUrl},
+                   isDirectLink=${firstSub != null and menu.name != null and menu.name.equalsIgnoreCase(firstSub.name)},
+                   isExternal=${linkUrl != null and linkUrl.matches('(?i)^https?://.*')},
                    iconClass=${menu.menuEntity.menuId == 1 ? 'fa-home' :
                                menu.menuEntity.menuId == 2 ? 'fa-external-link' :
                                menu.menuEntity.menuId == 3 ? 'fa-globe' :
                                menu.menuEntity.menuId == 4 ? 'fa-users' :
                                menu.menuEntity.menuId == 5 ? 'fa-bar-chart' :
-                               menu.menuEntity.menuId == 6 ? 'fa-cog' : 'fa-folder'},
-                   isOpen=${(!isDirect and menudata == menu.menuEntity.orderNo)}"
-          th:classappend="${isOpen} ? ' is-open' : ''"
+                               menu.menuEntity.menuId == 6 ? 'fa-cog' : 'fa-folder'}"
+          th:classappend="${(!isDirectLink and menudata == menu.menuEntity.orderNo) ? ' is-open' : ''}"
         >
-          <!-- Direct link menu (acts like a single program) -->
-          <th:block
-            th:if="${isDirect}"
-            th:replace="layout/sidebar :: menuLink(${firstSub != null ? firstSub.url : null}, ${menu.name}, 'sidebar-link', false, ${iconClass})"
-          >
-          </th:block>
-
-          <!-- Menu with subprograms -->
           <a
-            th:unless="${isDirect}"
-            href="#!"
-            class="sidebar-link sidebar-link--parent"
+            th:if="${isDirectLink}"
+            class="sidebar-link"
+            th:href="${linkUrl}"
             th:title="${menu.name}"
-            th:attr="aria-expanded=${isOpen} ? 'true' : 'false'"
+            th:attr="target=${isExternal} ? '_blank' : null, rel=${isExternal} ? 'noopener noreferrer' : null"
           >
             <span class="sidebar-icon">
               <i
                 class="fa"
-                th:classappend="' ' + iconClass"
+                th:classappend="' ' + ${iconClass}"
                 aria-hidden="true"
               ></i>
             </span>
             <span class="sidebar-text">[[${menu.name}]]</span>
-            <span class="sidebar-caret"
-              ><i class="fa fa-angle-down" aria-hidden="true"></i
-            ></span>
+          </a>
+
+          <a
+            th:unless="${isDirectLink}"
+            href="javascript:void(0)"
+            class="sidebar-link sidebar-link--parent"
+            th:title="${menu.name}"
+          >
+            <span class="sidebar-icon">
+              <i
+                class="fa"
+                th:classappend="' ' + ${iconClass}"
+                aria-hidden="true"
+              ></i>
+            </span>
+            <span class="sidebar-text">[[${menu.name}]]</span>
+            <span class="sidebar-caret">
+              <i class="fa fa-angle-down" aria-hidden="true"></i>
+            </span>
           </a>
 
           <ul
             class="dropdown"
-            th:if="${!isDirect}"
-            th:style="${isOpen} ? 'display:block;' : 'display:none;'"
+            th:if="${!isDirectLink}"
+            th:style="${menudata == menu.menuEntity.orderNo} ? 'display:block;' : 'display:none;'"
           >
-            <li class="sidebar-subitem" th:each="subMenu : ${menu.subVos}">
-              <th:block
-                th:replace="layout/sidebar :: menuLink(${subMenu.url}, ${subMenu.name}, 'sidebar-sublink', true, null)"
-              ></th:block>
+            <li
+              class="sidebar-subitem"
+              th:each="subMenu : ${menu.subVos}"
+              th:with="subUrl=${#strings.isEmpty(subMenu.url) ? null : (subMenu.url.matches('(?i)^https?://.*') or subMenu.url.startsWith('/')) ? subMenu.url : '/' + subMenu.url},
+                       subExternal=${subUrl != null and subUrl.matches('(?i)^https?://.*')}"
+            >
+              <a
+                class="sidebar-sublink"
+                th:href="${subUrl != null ? subUrl : '#'}"
+                th:title="${subMenu.name}"
+                th:attr="target=${subExternal} ? '_blank' : null, rel=${subExternal} ? 'noopener noreferrer' : null"
+              >
+                <span class="sidebar-bullet"></span>
+                <span class="sidebar-text">[[${subMenu.name}]]</span>
+              </a>
             </li>
           </ul>
         </li>

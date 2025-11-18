@@ -68,9 +68,21 @@ public class CustomerCareController extends BaseController {
                 CustomerCareConditionVo stored = (CustomerCareConditionVo) session.getAttribute(SESSION_CONDITION_KEY);
                 customerCareService.copyQueryCondition(stored, condition);
             }
-
             QueryResultVo result = customerCareService.findTransactionsByIdentifier(condition);
-            return new ResponseEntity<>(result, HttpStatus.OK);
+            // Provide identifiers map so front-end can display all related IDs even if some
+            // are null
+            java.util.Map<String, Object> identifiers = customerCareService.getUserIdentifiers(condition);
+            java.util.Map<String, Object> response = new java.util.LinkedHashMap<>();
+            response.put("total", result.getTotal());
+            response.put("result", result.getResult());
+            response.put("number", result.getNumber());
+            response.put("size", result.getSize());
+            response.put("order", result.getOrder());
+            response.put("name", result.getName());
+            if (identifiers != null) {
+                response.put("identifiers", identifiers);
+            }
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             log.error("CustomerCareController searchTransactions Error: {}", e.getMessage(), e);
             return getErrorResponse();

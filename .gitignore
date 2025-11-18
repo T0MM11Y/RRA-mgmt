@@ -38,6 +38,12 @@ error.log
 # Tomcat/Server Work Directory
 # ====================
 work/
+
+# ====================
+# Front-end tooling
+# ====================
+node_modules/
+.stylelintcache
 Tomcat/
 Tomcat-*/
 

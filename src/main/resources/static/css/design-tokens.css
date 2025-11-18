@@ -1,0 +1,102 @@
+:root {
+  /* Typography */
+  --font-family-sans: "Noto Sans TC", "Inter", "Segoe UI", -apple-system,
+    BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+
+  /* Color palette */
+  --color-body-text: #0f1f34;
+  --color-muted: #5d6c85;
+  --color-muted-strong: #25304b;
+  --color-inverse: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f7fb;
+  --color-surface-variant: #eef3ff;
+  --color-border-soft: #dfe6f3;
+  --color-border-strong: #c5d0e4;
+  --color-shadow-soft: 0 12px 32px rgba(38, 63, 120, 0.12);
+  --color-shadow-strong: 0 26px 60px rgba(18, 42, 94, 0.22);
+  --color-body-surface: radial-gradient(
+      circle at 15% 20%,
+      rgba(42, 111, 245, 0.08),
+      transparent 45%
+    ),
+    radial-gradient(circle at 80% 0%, rgba(93, 148, 255, 0.1), transparent 50%),
+    #f6f9fc;
+  --color-primary: #2a6ff5;
+  --color-primary-dark: #1f58c7;
+  --color-primary-soft: rgba(42, 111, 245, 0.16);
+  --color-accent: #5ad0ff;
+  --color-success-soft: rgba(32, 179, 114, 0.16);
+  --color-success-strong: #148c63;
+  --color-danger-soft: rgba(240, 91, 91, 0.18);
+  --color-danger-strong: #c1352a;
+  --color-warning: #f7a13b;
+  --color-info-accent: #4b70ff;
+  --color-topbar-button-bg: rgba(255, 255, 255, 0.25);
+  --color-topbar-button-border: rgba(255, 255, 255, 0.4);
+
+  /* Layout chrome */
+  --layout-main-bg: #eef3ff;
+  --content-card-bg: #ffffff;
+  --topbar-height: 64px;
+  --sidebar-width: 268px;
+  --sidebar-collapsed-width: 72px;
+  --topbar-surface: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(239, 246, 255, 0.94) 100%
+  );
+  --sidebar-bg-start: #2a6ff5;
+  --sidebar-bg-end: #1f58c7;
+  --sidebar-bg: linear-gradient(180deg, #2a6ff5 0%, #244fce 100%);
+  --sidebar-shadow: rgba(24, 57, 140, 0.38);
+  --sidebar-glow: rgba(255, 255, 255, 0.18);
+  --sidebar-text: rgba(255, 255, 255, 0.92);
+  --sidebar-text-muted: rgba(226, 235, 255, 0.8);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.14);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.25);
+  --sidebar-accent: #fffbeb;
+
+  /* Radii & spacing */
+  --radius-large: 24px;
+  --radius-medium: 18px;
+  --radius-small: 14px;
+  --radius-pill: 999px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* Motion */
+  --transition-base: all 0.25s ease;
+  --transition-fast: all 0.18s ease;
+  --transition-slow: all 0.4s ease;
+
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 4px 12px rgba(31, 50, 94, 0.12);
+  --shadow-md: 0 10px 30px rgba(29, 44, 77, 0.18);
+  --shadow-lg: 0 20px 55px rgba(15, 29, 55, 0.22);
+
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-base: none;
+    --transition-fast: none;
+    --transition-slow: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
