@@ -32,6 +32,4 @@ public class TransactionHistoryConditionVo extends PaginationVo {
 	// (Time range filters removed)
 
 	private ActionType action = ActionType.UNKNOWN;
-
-	private String exportType;
 }

@@ -11,8 +11,6 @@ public interface TransactionRecordDao {
 
 	Integer countByCondition(TransactionHistoryConditionVo condition);
 
-	List<TransactionRecordDto> findForExport(TransactionHistoryConditionVo condition);
-
 	List<String> findDistinctTransactionTypes(String homeOpco);
 
 	List<String> findDistinctPaymentMethods(String homeOpco);
@@ -25,7 +23,8 @@ public interface TransactionRecordDao {
 
 	/**
 	 * Resolve USER_ID from transaction records by AES TWM UID (identity_value).
-	 * Returns the latest non-null user_id ordered by transaction_time desc, or null if none.
+	 * Returns the latest non-null user_id ordered by transaction_time desc, or null
+	 * if none.
 	 */
 	String findLatestUserIdByAesTwmUid(String aesTwmUid);
 }

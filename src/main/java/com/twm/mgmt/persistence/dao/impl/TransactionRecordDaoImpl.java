@@ -109,23 +109,6 @@ public class TransactionRecordDaoImpl implements TransactionRecordDao {
 	}
 
 	@Override
-	public List<TransactionRecordDto> findForExport(TransactionHistoryConditionVo condition) {
-		String sql = composeSql(condition, false);
-		Map<String, Object> params = composeParams(condition);
-
-		Query query = entityManager.createNativeQuery(sql);
-		for (Entry<String, Object> entry : params.entrySet()) {
-			query.setParameter(entry.getKey(), entry.getValue());
-		}
-
-		@SuppressWarnings("unchecked")
-		NativeQuery<Object[]> nativeQuery = (NativeQuery<Object[]>) query.unwrap(NativeQuery.class);
-		List<Object[]> rows = nativeQuery.getResultList();
-
-		return rows.stream().map(this::mapRowToDto).collect(Collectors.toList());
-	}
-
-	@Override
 	public String findLatestAesTwmUidByUserId(String userId) {
 		if (StringUtilsEx.isBlank(userId)) {
 			return null;
